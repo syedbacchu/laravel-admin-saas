@@ -16,12 +16,13 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name',100)->nullable();
+            $table->unsignedBigInteger('parent_id')->default(0);
             $table->string('username',100)->unique()->nullable();
-            $table->string('email',180)->unique()->nullable();
-            $table->string('phone',20)->unique()->nullable();
+            $table->string('email',180)->nullable();
+            $table->string('phone',20)->nullable();
             $table->string('phone_code',20)->default('88');
             $table->string('password')->nullable();
-            $table->tinyInteger('role_module')->default(3)->comment("1= super admin, 2 = admin, 3 = user");
+            $table->tinyInteger('role_module')->default(3)->comment("1= super admin, 2 = admin, 3 = tenant");
             $table->unsignedBigInteger('role_id')->nullable();
             $table->tinyInteger('enable_login')->default(1);
             $table->tinyInteger('status')->default(0);

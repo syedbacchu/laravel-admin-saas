@@ -21,6 +21,10 @@ class Viewed
             'profile' => 'admin.profile.index',
             'edit' => 'admin.profile.settings',
         ],
+        'tenant' => [
+            'list' => 'admin.tenant.index',
+            'create' => 'admin.tenant.create',
+        ],
         'file' => [
             'list_data'  => 'admin.file_manager.list',
             'list'  => 'admin.file_manager.index',

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\Role\RoleController;
 use App\Http\Controllers\Admin\Settings\CustomFieldController;
 use App\Http\Controllers\Admin\Settings\SettingsController;
 use App\Http\Controllers\Admin\Settings\SettingFieldController;
+use App\Http\Controllers\Admin\Tenant\TenantController;
 use App\Http\Controllers\Admin\Post\PostCategoryController;
 use App\Http\Controllers\Admin\Post\PostCommentController;
 use App\Http\Controllers\Admin\Post\PostController;
@@ -46,6 +47,12 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
     Route::group(['prefix' => 'users', 'as' => 'user.'], function () {
         Route::get('user-delete/{id}', [UserController::class, 'destroy'])->name('delete');
         Route::post('user-status', [UserController::class, 'status'])->name('status');
+    });
+
+    Route::group(['prefix' => 'tenants', 'as' => 'tenant.', 'middleware' => ['skip.permission', 'no.permission.sync']], function () {
+        Route::get('/', [TenantController::class, 'index'])->name('list');
+        Route::get('/create', [TenantController::class, 'create'])->name('create');
+        Route::post('/', [TenantController::class, 'store'])->name('store');
     });
 
     // General Setting

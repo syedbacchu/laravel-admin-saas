@@ -28,6 +28,24 @@ return [
         ],
     ],
     [
+        'key' => 'tenants',
+        'label' => 'Tenants',
+        'icon' => 'user',
+        'permission' => null,
+        'children' => [
+            [
+                'label' => 'Tenant List',
+                'route' => 'tenant.list',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Create Tenant',
+                'route' => 'tenant.create',
+                'permission' => null,
+            ],
+        ],
+    ],
+    [
         'key' => 'app',
         'label' => 'App Setup',
         'icon' => 'app',

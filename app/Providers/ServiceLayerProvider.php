@@ -46,6 +46,12 @@ use App\Http\Services\User\UserRepository;
 use App\Http\Services\User\UserRepositoryInterface;
 use App\Http\Services\User\UserService;
 use App\Http\Services\User\UserServiceInterface;
+use App\Http\Services\Tenant\TenantRepository;
+use App\Http\Services\Tenant\TenantRepositoryInterface;
+use App\Http\Services\Tenant\TenantService;
+use App\Http\Services\Tenant\TenantServiceInterface;
+use App\Http\Services\Tenant\TenantProvisionService;
+use App\Http\Services\Tenant\TenantProvisionServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class ServiceLayerProvider extends ServiceProvider
@@ -88,6 +94,10 @@ class ServiceLayerProvider extends ServiceProvider
 
         $this->app->bind(PostCommentRepositoryInterface::class, PostCommentRepository::class);
         $this->app->bind(PostCommentServiceInterface::class, PostCommentService::class);
+
+        $this->app->bind(TenantRepositoryInterface::class, TenantRepository::class);
+        $this->app->bind(TenantServiceInterface::class, TenantService::class);
+        $this->app->bind(TenantProvisionServiceInterface::class, TenantProvisionService::class);
     }
 
     /**

@@ -63,6 +63,46 @@ return [
             ]) : [],
         ],
 
+        'tenant' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('TENANCY_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('TENANCY_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('TENANCY_DB_DATABASE', ''),
+            'username' => env('TENANCY_DB_USERNAME', env('DB_USERNAME', 'forge')),
+            'password' => env('TENANCY_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('TENANCY_DB_SOCKET', env('DB_SOCKET', '')),
+            'charset' => env('TENANCY_DB_CHARSET', 'utf8mb4'),
+            'collation' => env('TENANCY_DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        'tenant_admin' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('TENANCY_DB_ADMIN_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('TENANCY_DB_ADMIN_PORT', env('DB_PORT', '3306')),
+            'database' => env('TENANCY_DB_ADMIN_DATABASE', env('DB_DATABASE', 'mysql')),
+            'username' => env('TENANCY_DB_ADMIN_USERNAME', env('DB_USERNAME', 'forge')),
+            'password' => env('TENANCY_DB_ADMIN_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('TENANCY_DB_ADMIN_SOCKET', env('DB_SOCKET', '')),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
