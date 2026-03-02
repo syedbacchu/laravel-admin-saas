@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tenant extends Model
 {
@@ -32,5 +33,15 @@ class Tenant extends Model
     public function database(): HasOne
     {
         return $this->hasOne(TenantDatabase::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function subscriptionPayments(): HasMany
+    {
+        return $this->hasMany(SubscriptionPayment::class);
     }
 }

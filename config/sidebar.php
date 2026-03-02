@@ -46,6 +46,69 @@ return [
         ],
     ],
     [
+        'key' => 'billing',
+        'label' => 'Billing',
+        'icon' => 'settings',
+        'permission' => null,
+        'children' => [
+            [
+                'label' => 'Feature List',
+                'route' => 'feature.list',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Create Feature',
+                'route' => 'feature.create',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Plan List',
+                'route' => 'plan.list',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Create Plan',
+                'route' => 'plan.create',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Subscription List',
+                'route' => 'subscription.list',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Create Subscription',
+                'route' => 'subscription.create',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Payment Method List',
+                'route' => 'paymentMethod.list',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Create Payment Method',
+                'route' => 'paymentMethod.create',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Subscription Payment List',
+                'route' => 'subscriptionPayment.list',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Create Subscription Payment',
+                'route' => 'subscriptionPayment.create',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Payment Report',
+                'route' => 'subscriptionPayment.report',
+                'permission' => null,
+            ],
+        ],
+    ],
+    [
         'key' => 'app',
         'label' => 'App Setup',
         'icon' => 'app',
@@ -183,6 +246,16 @@ return [
                 'label' => 'Settings Fields',
                 'route' => 'settings.fields.index',
                 'permission' => 'settings.fields.index',
+            ],
+            [
+                'label' => 'Language List',
+                'route' => 'language.list',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Create Language',
+                'route' => 'language.create',
+                'permission' => null,
             ],
         ],
     ],

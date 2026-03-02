@@ -30,6 +30,26 @@ use App\Http\Services\Post\PostRepository;
 use App\Http\Services\Post\PostRepositoryInterface;
 use App\Http\Services\Post\PostService;
 use App\Http\Services\Post\PostServiceInterface;
+use App\Http\Services\Billing\FeatureRepository;
+use App\Http\Services\Billing\FeatureRepositoryInterface;
+use App\Http\Services\Billing\FeatureService;
+use App\Http\Services\Billing\FeatureServiceInterface;
+use App\Http\Services\Billing\PlanRepository;
+use App\Http\Services\Billing\PlanRepositoryInterface;
+use App\Http\Services\Billing\PlanService;
+use App\Http\Services\Billing\PlanServiceInterface;
+use App\Http\Services\Billing\PaymentMethodRepository;
+use App\Http\Services\Billing\PaymentMethodRepositoryInterface;
+use App\Http\Services\Billing\PaymentMethodService;
+use App\Http\Services\Billing\PaymentMethodServiceInterface;
+use App\Http\Services\Billing\SubscriptionRepository;
+use App\Http\Services\Billing\SubscriptionRepositoryInterface;
+use App\Http\Services\Billing\SubscriptionService;
+use App\Http\Services\Billing\SubscriptionServiceInterface;
+use App\Http\Services\Billing\SubscriptionPaymentRepository;
+use App\Http\Services\Billing\SubscriptionPaymentRepositoryInterface;
+use App\Http\Services\Billing\SubscriptionPaymentService;
+use App\Http\Services\Billing\SubscriptionPaymentServiceInterface;
 use App\Http\Services\PostComment\PostCommentRepository;
 use App\Http\Services\PostComment\PostCommentRepositoryInterface;
 use App\Http\Services\PostComment\PostCommentService;
@@ -42,6 +62,10 @@ use App\Http\Services\Faq\FaqRepository;
 use App\Http\Services\Faq\FaqRepositoryInterface;
 use App\Http\Services\Faq\FaqService;
 use App\Http\Services\Faq\FaqServiceInterface;
+use App\Http\Services\Language\LanguageRepository;
+use App\Http\Services\Language\LanguageRepositoryInterface;
+use App\Http\Services\Language\LanguageService;
+use App\Http\Services\Language\LanguageServiceInterface;
 use App\Http\Services\User\UserRepository;
 use App\Http\Services\User\UserRepositoryInterface;
 use App\Http\Services\User\UserService;
@@ -94,6 +118,24 @@ class ServiceLayerProvider extends ServiceProvider
 
         $this->app->bind(PostCommentRepositoryInterface::class, PostCommentRepository::class);
         $this->app->bind(PostCommentServiceInterface::class, PostCommentService::class);
+
+        $this->app->bind(LanguageRepositoryInterface::class, LanguageRepository::class);
+        $this->app->bind(LanguageServiceInterface::class, LanguageService::class);
+
+        $this->app->bind(FeatureRepositoryInterface::class, FeatureRepository::class);
+        $this->app->bind(FeatureServiceInterface::class, FeatureService::class);
+
+        $this->app->bind(PlanRepositoryInterface::class, PlanRepository::class);
+        $this->app->bind(PlanServiceInterface::class, PlanService::class);
+
+        $this->app->bind(SubscriptionRepositoryInterface::class, SubscriptionRepository::class);
+        $this->app->bind(SubscriptionServiceInterface::class, SubscriptionService::class);
+
+        $this->app->bind(PaymentMethodRepositoryInterface::class, PaymentMethodRepository::class);
+        $this->app->bind(PaymentMethodServiceInterface::class, PaymentMethodService::class);
+
+        $this->app->bind(SubscriptionPaymentRepositoryInterface::class, SubscriptionPaymentRepository::class);
+        $this->app->bind(SubscriptionPaymentServiceInterface::class, SubscriptionPaymentService::class);
 
         $this->app->bind(TenantRepositoryInterface::class, TenantRepository::class);
         $this->app->bind(TenantServiceInterface::class, TenantService::class);

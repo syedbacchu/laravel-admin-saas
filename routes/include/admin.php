@@ -6,6 +6,12 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\Faq\FaqCategoryController;
 use App\Http\Controllers\Admin\Faq\FaqController;
 use App\Http\Controllers\Admin\FileManager\FileManagerController;
+use App\Http\Controllers\Admin\Billing\FeatureController;
+use App\Http\Controllers\Admin\Billing\PlanController;
+use App\Http\Controllers\Admin\Billing\SubscriptionController;
+use App\Http\Controllers\Admin\Billing\PaymentMethodController;
+use App\Http\Controllers\Admin\Billing\SubscriptionPaymentController;
+use App\Http\Controllers\Admin\Language\LanguageController;
 use App\Http\Controllers\Admin\Role\RoleController;
 use App\Http\Controllers\Admin\Settings\CustomFieldController;
 use App\Http\Controllers\Admin\Settings\SettingsController;
@@ -53,6 +59,86 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
         Route::get('/', [TenantController::class, 'index'])->name('list');
         Route::get('/create', [TenantController::class, 'create'])->name('create');
         Route::post('/', [TenantController::class, 'store'])->name('store');
+    });
+
+    Route::resource('languages', LanguageController::class)
+        ->except(['destroy'])
+        ->middleware(['skip.permission', 'no.permission.sync'])
+        ->names([
+            'index' => 'language.list',
+            'create' => 'language.create',
+            'edit' => 'language.edit',
+            'store' => 'language.store',
+            'update' => 'language.update',
+            'show' => 'language.show',
+        ]);
+    Route::group(['prefix' => 'languages', 'as' => 'language.', 'middleware' => ['skip.permission', 'no.permission.sync']], function () {
+        Route::get('language-delete/{id}', [LanguageController::class, 'destroy'])->name('delete');
+        Route::post('publish', [LanguageController::class, 'languageStatus'])->name('publish');
+    });
+
+    Route::group(['prefix' => 'billing', 'middleware' => ['skip.permission', 'no.permission.sync']], function () {
+        Route::resource('features', FeatureController::class)
+            ->except(['destroy'])
+            ->names([
+                'index' => 'feature.list',
+                'create' => 'feature.create',
+                'edit' => 'feature.edit',
+                'store' => 'feature.store',
+                'update' => 'feature.update',
+                'show' => 'feature.show',
+            ]);
+        Route::get('features-delete/{id}', [FeatureController::class, 'destroy'])->name('feature.delete');
+
+        Route::resource('plans', PlanController::class)
+            ->except(['destroy'])
+            ->names([
+                'index' => 'plan.list',
+                'create' => 'plan.create',
+                'edit' => 'plan.edit',
+                'store' => 'plan.store',
+                'update' => 'plan.update',
+                'show' => 'plan.show',
+            ]);
+        Route::get('plans-delete/{id}', [PlanController::class, 'destroy'])->name('plan.delete');
+
+        Route::resource('subscriptions', SubscriptionController::class)
+            ->except(['destroy'])
+            ->names([
+                'index' => 'subscription.list',
+                'create' => 'subscription.create',
+                'edit' => 'subscription.edit',
+                'store' => 'subscription.store',
+                'update' => 'subscription.update',
+                'show' => 'subscription.show',
+            ]);
+        Route::get('subscriptions-delete/{id}', [SubscriptionController::class, 'destroy'])->name('subscription.delete');
+
+        Route::resource('payment-methods', PaymentMethodController::class)
+            ->except(['destroy'])
+            ->names([
+                'index' => 'paymentMethod.list',
+                'create' => 'paymentMethod.create',
+                'edit' => 'paymentMethod.edit',
+                'store' => 'paymentMethod.store',
+                'update' => 'paymentMethod.update',
+                'show' => 'paymentMethod.show',
+            ]);
+        Route::get('payment-methods-delete/{id}', [PaymentMethodController::class, 'destroy'])->name('paymentMethod.delete');
+        Route::post('payment-methods-publish', [PaymentMethodController::class, 'paymentMethodStatus'])->name('paymentMethod.publish');
+
+        Route::resource('subscription-payments', SubscriptionPaymentController::class)
+            ->except(['destroy'])
+            ->names([
+                'index' => 'subscriptionPayment.list',
+                'create' => 'subscriptionPayment.create',
+                'edit' => 'subscriptionPayment.edit',
+                'store' => 'subscriptionPayment.store',
+                'update' => 'subscriptionPayment.update',
+                'show' => 'subscriptionPayment.show',
+            ]);
+        Route::get('subscription-payments-delete/{id}', [SubscriptionPaymentController::class, 'destroy'])->name('subscriptionPayment.delete');
+        Route::get('subscription-payments-report', [SubscriptionPaymentController::class, 'report'])->name('subscriptionPayment.report');
     });
 
     // General Setting

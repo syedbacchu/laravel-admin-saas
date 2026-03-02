@@ -21,6 +21,31 @@ class Viewed
             'profile' => 'admin.profile.index',
             'edit' => 'admin.profile.settings',
         ],
+        'language' => [
+            'list' => 'admin.language.index',
+            'create' => 'admin.language.create',
+        ],
+        'feature' => [
+            'list' => 'admin.billing.feature.index',
+            'create' => 'admin.billing.feature.create',
+        ],
+        'plan' => [
+            'list' => 'admin.billing.plan.index',
+            'create' => 'admin.billing.plan.create',
+        ],
+        'subscription' => [
+            'list' => 'admin.billing.subscription.index',
+            'create' => 'admin.billing.subscription.create',
+        ],
+        'paymentMethod' => [
+            'list' => 'admin.billing.payment_method.index',
+            'create' => 'admin.billing.payment_method.create',
+        ],
+        'subscriptionPayment' => [
+            'list' => 'admin.billing.subscription_payment.index',
+            'create' => 'admin.billing.subscription_payment.create',
+            'report' => 'admin.billing.subscription_payment.report',
+        ],
         'tenant' => [
             'list' => 'admin.tenant.index',
             'create' => 'admin.tenant.create',
