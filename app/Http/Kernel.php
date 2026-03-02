@@ -68,5 +68,8 @@ class Kernel extends HttpKernel
         'skip.permission'      => \App\Http\Middleware\SkipPermission::class,
         'no.permission.sync' => \App\Http\Middleware\NoPermissionSync::class,
         'api.protection' => \App\Http\Middleware\ApiProtection::class,
+        'tenant.context' => \App\Http\Middleware\Tenant\ResolveTenantContext::class,
+        'tenant.subscription.active' => \App\Http\Middleware\Tenant\EnsureTenantSubscriptionActive::class,
+        'tenant.feature' => \App\Http\Middleware\Tenant\EnsureTenantFeatureAccess::class,
     ];
 }

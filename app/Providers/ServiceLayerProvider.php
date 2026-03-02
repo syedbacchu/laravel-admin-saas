@@ -74,6 +74,10 @@ use App\Http\Services\Tenant\TenantRepository;
 use App\Http\Services\Tenant\TenantRepositoryInterface;
 use App\Http\Services\Tenant\TenantService;
 use App\Http\Services\Tenant\TenantServiceInterface;
+use App\Http\Services\TenantApi\TenantApiRepository;
+use App\Http\Services\TenantApi\TenantApiRepositoryInterface;
+use App\Http\Services\TenantApi\TenantApiService;
+use App\Http\Services\TenantApi\TenantApiServiceInterface;
 use App\Http\Services\Tenant\TenantProvisionService;
 use App\Http\Services\Tenant\TenantProvisionServiceInterface;
 use Illuminate\Support\ServiceProvider;
@@ -140,6 +144,9 @@ class ServiceLayerProvider extends ServiceProvider
         $this->app->bind(TenantRepositoryInterface::class, TenantRepository::class);
         $this->app->bind(TenantServiceInterface::class, TenantService::class);
         $this->app->bind(TenantProvisionServiceInterface::class, TenantProvisionService::class);
+
+        $this->app->bind(TenantApiRepositoryInterface::class, TenantApiRepository::class);
+        $this->app->bind(TenantApiServiceInterface::class, TenantApiService::class);
     }
 
     /**
