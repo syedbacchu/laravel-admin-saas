@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Api\Post\BlogCommentController;
@@ -8,8 +7,10 @@ use App\Http\Controllers\Api\Post\BlogController;
 use App\Http\Controllers\Api\Tenant\AccessController as TenantAccessController;
 use App\Http\Controllers\Api\Tenant\AuthController as TenantAuthController;
 use App\Http\Controllers\Api\Tenant\DashboardController as TenantDashboardController;
+use App\Http\Controllers\Api\Tenant\DriverController as TenantDriverController;
 use App\Http\Controllers\Api\Tenant\ProfileController as TenantProfileController;
 use App\Http\Controllers\Api\Tenant\SubscriptionController as TenantSubscriptionController;
+use App\Http\Controllers\Api\Tenant\VehicleController as TenantVehicleController;
 use App\Http\Controllers\Api\User\ProfileController;
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +35,7 @@ Route::group(['prefix' => 'blogs', 'as' => 'apiBlog.'], function () {
     Route::get('{identifier}', [BlogController::class, 'show'])->name('details');
 });
 
-Route::group(['middleware' => ['auth:api'],'prefix' => 'user', 'as' => 'apiUser.', ], function () {
+Route::group(['middleware' => ['auth:api'], 'prefix' => 'user', 'as' => 'apiUser.'], function () {
     Route::get('profile', [ProfileController::class, 'profile'])->name('profile');
 });
 
@@ -59,5 +60,17 @@ Route::group(['prefix' => 'tenant/{company_username}', 'as' => 'tenantApi.'], fu
         Route::get('feature-check/{feature_key}', [TenantAccessController::class, 'featureCheck'])
             ->middleware('tenant.feature')
             ->name('featureCheck');
+
+        Route::get('vehicles', [TenantVehicleController::class, 'index'])->name('vehicles.list');
+        Route::post('vehicles', [TenantVehicleController::class, 'store'])->name('vehicles.store');
+        Route::get('vehicles/{id}', [TenantVehicleController::class, 'show'])->name('vehicles.show');
+        Route::put('vehicles/{id}', [TenantVehicleController::class, 'update'])->name('vehicles.update');
+        Route::delete('vehicles/{id}', [TenantVehicleController::class, 'destroy'])->name('vehicles.delete');
+
+        Route::get('drivers', [TenantDriverController::class, 'index'])->name('drivers.list');
+        Route::post('drivers', [TenantDriverController::class, 'store'])->name('drivers.store');
+        Route::get('drivers/{id}', [TenantDriverController::class, 'show'])->name('drivers.show');
+        Route::put('drivers/{id}', [TenantDriverController::class, 'update'])->name('drivers.update');
+        Route::delete('drivers/{id}', [TenantDriverController::class, 'destroy'])->name('drivers.delete');
     });
 });

@@ -80,6 +80,14 @@ use App\Http\Services\TenantApi\TenantApiService;
 use App\Http\Services\TenantApi\TenantApiServiceInterface;
 use App\Http\Services\Tenant\TenantProvisionService;
 use App\Http\Services\Tenant\TenantProvisionServiceInterface;
+use App\Http\Services\TenantDriver\TenantDriverRepository;
+use App\Http\Services\TenantDriver\TenantDriverRepositoryInterface;
+use App\Http\Services\TenantDriver\TenantDriverService;
+use App\Http\Services\TenantDriver\TenantDriverServiceInterface;
+use App\Http\Services\TenantVehicle\TenantVehicleRepository;
+use App\Http\Services\TenantVehicle\TenantVehicleRepositoryInterface;
+use App\Http\Services\TenantVehicle\TenantVehicleService;
+use App\Http\Services\TenantVehicle\TenantVehicleServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class ServiceLayerProvider extends ServiceProvider
@@ -147,6 +155,12 @@ class ServiceLayerProvider extends ServiceProvider
 
         $this->app->bind(TenantApiRepositoryInterface::class, TenantApiRepository::class);
         $this->app->bind(TenantApiServiceInterface::class, TenantApiService::class);
+
+        $this->app->bind(TenantVehicleRepositoryInterface::class, TenantVehicleRepository::class);
+        $this->app->bind(TenantVehicleServiceInterface::class, TenantVehicleService::class);
+
+        $this->app->bind(TenantDriverRepositoryInterface::class, TenantDriverRepository::class);
+        $this->app->bind(TenantDriverServiceInterface::class, TenantDriverService::class);
     }
 
     /**
