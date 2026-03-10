@@ -66,13 +66,13 @@ Route::group(['middleware' => ['api.protection']], function () {
             Route::get('vehicles', [TenantVehicleController::class, 'index'])->name('vehicles.list');
             Route::post('vehicles', [TenantVehicleController::class, 'store'])->name('vehicles.store');
             Route::get('vehicles/{id}', [TenantVehicleController::class, 'show'])->name('vehicles.show');
-            Route::put('vehicles/{id}', [TenantVehicleController::class, 'update'])->name('vehicles.update');
+            Route::post('vehicles/{id}', [TenantVehicleController::class, 'update'])->name('vehicles.update');
             Route::delete('vehicles/{id}', [TenantVehicleController::class, 'destroy'])->name('vehicles.delete');
 
             Route::get('drivers', [TenantDriverController::class, 'index'])->name('drivers.list');
             Route::post('drivers', [TenantDriverController::class, 'store'])->name('drivers.store');
             Route::get('drivers/{id}', [TenantDriverController::class, 'show'])->name('drivers.show');
-            Route::put('drivers/{id}', [TenantDriverController::class, 'update'])->name('drivers.update');
+            Route::post('drivers/{id}', [TenantDriverController::class, 'update'])->name('drivers.update');
             Route::delete('drivers/{id}', [TenantDriverController::class, 'destroy'])->name('drivers.delete');
         });
     });
