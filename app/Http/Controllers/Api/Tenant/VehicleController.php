@@ -39,7 +39,7 @@ class VehicleController extends Controller
         return ResponseService::send($response);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show(Request $request, string $company_username, int $id): JsonResponse
     {
         $response = $this->service->vehicleDetails($request, $id);
         if (($response['success'] ?? false) === true && isset($response['data'])) {
@@ -49,7 +49,7 @@ class VehicleController extends Controller
         return ResponseService::send($response);
     }
 
-    public function update(TenantVehicleCreateRequest $request, int $id): JsonResponse
+    public function update(TenantVehicleCreateRequest $request, string $company_username, int $id): JsonResponse
     {
         $request->merge(['edit_id' => $id]);
         $response = $this->service->storeVehicle($request);
@@ -60,7 +60,7 @@ class VehicleController extends Controller
         return ResponseService::send($response);
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, string $company_username, int $id): JsonResponse
     {
         $response = $this->service->deleteVehicle($request, $id);
         return ResponseService::send($response);

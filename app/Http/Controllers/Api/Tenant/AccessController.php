@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class AccessController extends Controller
 {
-    public function featureCheck(Request $request, string $feature_key): JsonResponse
+    public function featureCheck(Request $request, string $company_username, string $feature_key): JsonResponse
     {
         $tenant = $request->attributes->get('tenant');
         $activeSubscription = $request->attributes->get('active_subscription');
@@ -25,4 +25,3 @@ class AccessController extends Controller
         return ResponseService::send($response);
     }
 }
-
