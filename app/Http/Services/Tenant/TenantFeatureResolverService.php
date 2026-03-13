@@ -10,6 +10,16 @@ class TenantFeatureResolverService
 {
     public function getActiveSubscription(int $tenantId): ?Subscription
     {
+        Subscription::query()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('status', ['trialing', 'active', 'past_due'])
+            ->where('ends_at', '<', now())
+            ->update([
+                'status' => 'expired',
+                'auto_renew' => 0,
+                'updated_at' => now(),
+            ]);
+
         return Subscription::query()
             ->where('tenant_id', $tenantId)
             ->whereIn('status', ['trialing', 'active', 'past_due'])

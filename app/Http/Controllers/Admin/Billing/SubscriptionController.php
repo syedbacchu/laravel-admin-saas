@@ -48,12 +48,19 @@ class SubscriptionController extends Controller
                         $class = in_array($item->status, ['active', 'trialing'], true) ? 'bg-success' : 'bg-warning';
                         return '<span class="badge ' . $class . '">' . e(ucfirst(str_replace('_', ' ', $item->status))) . '</span>';
                     },
+                    'starts_at' => function ($item) {
+                        return date('d M Y', strtotime($item->starts_at));
+                    },
+                    'ends_at' => function ($item) {
+                        return date('d M Y', strtotime($item->ends_at));
+                    },
                     'actions' => fn ($item) =>
                         action_buttons([
                             edit_column(route('subscription.edit', $item->id)),
                             delete_column(route('subscription.delete', $item->id)),
                         ]),
                 ],
+
                 rawColumns: ['tenant', 'plan', 'status', 'actions']
             );
         }

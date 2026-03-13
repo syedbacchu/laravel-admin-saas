@@ -17,6 +17,15 @@ class SubscriptionRepository extends BaseRepository implements SubscriptionRepos
 
     public function subscriptionList(Request $request): array
     {
+        Subscription::query()
+            ->whereIn('status', ['trialing', 'active', 'past_due'])
+            ->where('ends_at', '<', now())
+            ->update([
+                'status' => 'expired',
+                'auto_renew' => 0,
+                'updated_at' => now(),
+            ]);
+
         return DataListManager::list(
             request: $request,
             query: Subscription::query(),
