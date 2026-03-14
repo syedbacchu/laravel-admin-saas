@@ -88,6 +88,10 @@ use App\Http\Services\TenantVehicle\TenantVehicleRepository;
 use App\Http\Services\TenantVehicle\TenantVehicleRepositoryInterface;
 use App\Http\Services\TenantVehicle\TenantVehicleService;
 use App\Http\Services\TenantVehicle\TenantVehicleServiceInterface;
+use App\Http\Services\PricingPlan\PricingPlanRepository;
+use App\Http\Services\PricingPlan\PricingPlanRepositoryInterface;
+use App\Http\Services\PricingPlan\PricingPlanService;
+use App\Http\Services\PricingPlan\PricingPlanServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class ServiceLayerProvider extends ServiceProvider
@@ -161,6 +165,9 @@ class ServiceLayerProvider extends ServiceProvider
 
         $this->app->bind(TenantDriverRepositoryInterface::class, TenantDriverRepository::class);
         $this->app->bind(TenantDriverServiceInterface::class, TenantDriverService::class);
+
+        $this->app->bind(PricingPlanRepositoryInterface::class, PricingPlanRepository::class);
+        $this->app->bind(PricingPlanServiceInterface::class, PricingPlanService::class);
     }
 
     /**

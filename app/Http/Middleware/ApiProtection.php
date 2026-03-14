@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\LanguageResolver;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,8 +18,8 @@ class ApiProtection
     {
         logStore($request->fullUrl(). ' req data =>' , $request->all());
 //         logStore($request->fullUrl().' req header =>', $request->header());
-        $lang = $request->header('lang') ?? 'en';
-        app()->setLocale($lang);
+        $language = LanguageResolver::resolveFromRequest($request, 'lang', 'en');
+        app()->setLocale((string) ($language['code'] ?? 'en'));
 
         $allowedOrigins = explode(',', env('CORS_ALLOW_ORIGIN', ''));
         $origin = $request->header('Origin');

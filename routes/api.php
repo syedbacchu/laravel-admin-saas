@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Tenant\DriverController as TenantDriverController;
 use App\Http\Controllers\Api\Tenant\ProfileController as TenantProfileController;
 use App\Http\Controllers\Api\Tenant\SubscriptionController as TenantSubscriptionController;
 use App\Http\Controllers\Api\Tenant\VehicleController as TenantVehicleController;
+use App\Http\Controllers\Api\PricingPlanController;
 use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\User\ProfileController;
 /*
@@ -35,6 +36,11 @@ Route::group(['middleware' => ['api.protection']], function () {
         Route::get('{identifier}/comments', [BlogCommentController::class, 'index'])->name('comments');
         Route::post('{identifier}/comments', [BlogCommentController::class, 'store'])->name('commentStore');
         Route::get('{identifier}', [BlogController::class, 'show'])->name('details');
+    });
+
+    Route::group(['prefix' => 'pricing-plan', 'as' => 'apiPricingPlan.'], function () {
+        Route::get('/', [PricingPlanController::class, 'index'])->name('list');
+        Route::get('{identifier}', [PricingPlanController::class, 'show'])->name('details');
     });
 
     Route::group(['middleware' => ['auth:api'], 'prefix' => 'user', 'as' => 'apiUser.'], function () {
