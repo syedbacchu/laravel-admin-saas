@@ -26,8 +26,10 @@ class SyncPermission
                 continue;
             }
 
-            // Optional: Only admin routes
-            if (!str_starts_with($route->uri(), 'admin')) {
+            $isAdminRoute = str_starts_with($route->uri(), 'admin');
+            $isTenantApiRoute = str_starts_with($route->uri(), 'api/tenant/');
+
+            if (!$isAdminRoute && !$isTenantApiRoute) {
                 continue;
             }
 

@@ -104,12 +104,15 @@ class TenantProvisionService implements TenantProvisionServiceInterface
     {
         return User::create([
             'name' => $payload['owner_name'],
+            'parent_id' => 0,
             'username' => $payload['company_username'],
             'email' => Arr::get($payload, 'owner_email'),
             'phone' => Arr::get($payload, 'owner_phone'),
             'password' => Hash::make($payload['owner_password']),
             'status' => 1,
+            'enable_login' => 1,
             'role_module' => enum(UserRole::USER_ROLE),
+            'user_type' => 'owner',
             'is_email_verified' => !empty($payload['owner_email']) ? 1 : 0,
             'is_phone_verified' => !empty($payload['owner_phone']) ? 1 : 0,
             'email_verified_at' => !empty($payload['owner_email']) ? now() : null,

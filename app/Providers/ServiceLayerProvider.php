@@ -88,6 +88,10 @@ use App\Http\Services\TenantVehicle\TenantVehicleRepository;
 use App\Http\Services\TenantVehicle\TenantVehicleRepositoryInterface;
 use App\Http\Services\TenantVehicle\TenantVehicleService;
 use App\Http\Services\TenantVehicle\TenantVehicleServiceInterface;
+use App\Http\Services\TenantStaff\TenantStaffRepository;
+use App\Http\Services\TenantStaff\TenantStaffRepositoryInterface;
+use App\Http\Services\TenantStaff\TenantStaffService;
+use App\Http\Services\TenantStaff\TenantStaffServiceInterface;
 use App\Http\Services\PricingPlan\PricingPlanRepository;
 use App\Http\Services\PricingPlan\PricingPlanRepositoryInterface;
 use App\Http\Services\PricingPlan\PricingPlanService;
@@ -165,6 +169,9 @@ class ServiceLayerProvider extends ServiceProvider
 
         $this->app->bind(TenantDriverRepositoryInterface::class, TenantDriverRepository::class);
         $this->app->bind(TenantDriverServiceInterface::class, TenantDriverService::class);
+
+        $this->app->bind(TenantStaffRepositoryInterface::class, TenantStaffRepository::class);
+        $this->app->bind(TenantStaffServiceInterface::class, TenantStaffService::class);
 
         $this->app->bind(PricingPlanRepositoryInterface::class, PricingPlanRepository::class);
         $this->app->bind(PricingPlanServiceInterface::class, PricingPlanService::class);

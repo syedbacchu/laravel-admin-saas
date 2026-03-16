@@ -21,13 +21,17 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'parent_id',
         'username',
         'email',
         'phone',
         'phone_code',
         'password',
         'role_module',
+        'user_type',
+        'tenant_driver_id',
         'role_id',
+        'enable_login',
         'status',
         'is_private',
         'added_by',
@@ -74,6 +78,15 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $casts = [
+        'parent_id' => 'integer',
+        'role_module' => 'integer',
+        'tenant_driver_id' => 'integer',
+        'role_id' => 'integer',
+        'enable_login' => 'integer',
+        'status' => 'integer',
     ];
 
     public function role()

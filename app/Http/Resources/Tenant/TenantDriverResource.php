@@ -19,6 +19,9 @@ class TenantDriverResource extends JsonResource
             'address' => $this->address,
             'notes' => $this->notes,
             'status' => (int) $this->status,
+            'has_login_account' => (bool) ($this->has_login_account ?? false),
+            'login_enabled' => (bool) ($this->login_enabled ?? false),
+            'login_account' => $this->login_account,
             'vehicle' => $this->whenLoaded('vehicle', function () {
                 return [
                     'id' => $this->vehicle?->id,

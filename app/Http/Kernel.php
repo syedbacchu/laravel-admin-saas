@@ -71,5 +71,6 @@ class Kernel extends HttpKernel
         'tenant.context' => \App\Http\Middleware\Tenant\ResolveTenantContext::class,
         'tenant.subscription.active' => \App\Http\Middleware\Tenant\EnsureTenantSubscriptionActive::class,
         'tenant.feature' => \App\Http\Middleware\Tenant\EnsureTenantFeatureAccess::class,
+        'tenant.api.permission' => \App\Http\Middleware\Tenant\EnsureTenantApiPermission::class,
     ];
 }

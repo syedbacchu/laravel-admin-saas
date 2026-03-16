@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Tenant\AuthController as TenantAuthController;
 use App\Http\Controllers\Api\Tenant\DashboardController as TenantDashboardController;
 use App\Http\Controllers\Api\Tenant\DriverController as TenantDriverController;
 use App\Http\Controllers\Api\Tenant\ProfileController as TenantProfileController;
+use App\Http\Controllers\Api\Tenant\StaffController as TenantStaffController;
 use App\Http\Controllers\Api\Tenant\SubscriptionController as TenantSubscriptionController;
 use App\Http\Controllers\Api\Tenant\VehicleController as TenantVehicleController;
 use App\Http\Controllers\Api\PricingPlanController;
@@ -58,13 +59,20 @@ Route::group(['middleware' => ['api.protection']], function () {
             Route::get('profile', [TenantProfileController::class, 'profile'])->name('profile');
             Route::post('update-profile', [TenantProfileController::class, 'updateProfile'])->name('updateProfile');
             Route::post('change-password', [TenantProfileController::class, 'changePassword'])->name('changePassword');
+            Route::get('staff', [TenantStaffController::class, 'index'])->name('staff.list');
+            Route::post('staff', [TenantStaffController::class, 'store'])->name('staff.store');
+            Route::get('staff/{id}', [TenantStaffController::class, 'show'])->name('staff.show');
+            Route::post('staff/{id}', [TenantStaffController::class, 'update'])->name('staff.update');
+            Route::delete('staff/{id}', [TenantStaffController::class, 'destroy'])->name('staff.delete');
+            Route::post('staff/{id}/reset-password', [TenantStaffController::class, 'resetPassword'])->name('staff.resetPassword');
+            Route::post('drivers/{id}/create-login', [TenantStaffController::class, 'createDriverLogin'])->name('drivers.createLogin');
             Route::get('subscription-details', [TenantSubscriptionController::class, 'details'])->name('subscriptionDetails');
             Route::get('dashboard', [TenantDashboardController::class, 'index'])
                 ->middleware(['tenant.subscription.active'])
                 ->name('dashboard');
         });
 
-        Route::group(['middleware' => [ 'auth:api', 'tenant.context', 'tenant.subscription.active']], function () {
+        Route::group(['middleware' => [ 'auth:api', 'tenant.context', 'tenant.subscription.active', 'tenant.api.permission']], function () {
             Route::get('feature-check/{feature_key}', [TenantAccessController::class, 'featureCheck'])
                 ->middleware('tenant.feature')
                 ->name('featureCheck');

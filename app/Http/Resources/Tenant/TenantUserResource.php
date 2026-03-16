@@ -18,8 +18,11 @@ class TenantUserResource extends JsonResource
             'language' => $this->language,
             'address' => $this->address,
             'status' => $this->status,
+            'enable_login' => $this->enable_login,
             'role_module' => $this->role_module,
+            'role_id' => $this->role_id,
+            'user_type' => $this->user_type,
+            'tenant_driver_id' => $this->tenant_driver_id,
         ];
     }
 }
-

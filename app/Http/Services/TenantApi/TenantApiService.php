@@ -17,6 +17,7 @@ use App\Http\Services\Tenant\TenantFeatureResolverService;
 use App\Models\Subscription;
 use App\Models\SubscriptionPayment;
 use App\Models\Tenant;
+use App\Models\TenantDriver;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -61,6 +62,16 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
             return $this->sendResponse(false, __('Account is disabled. Please contact administrator.'), [], 403);
         }
 
+        $userType = $this->resolveTenantUserType($user, $tenant);
+        if ($userType === 'driver') {
+            $tenantDriverId = (int) ($user->tenant_driver_id ?? 0);
+            $driver = $tenantDriverId > 0 ? TenantDriver::query()->find($tenantDriverId) : null;
+
+            if (!$driver || (int) $driver->status !== 1) {
+                return $this->sendResponse(false, __('Driver account is inactive'), [], 403);
+            }
+        }
+
         RateLimiter::clear($throttleKey);
 
         $user->update([
@@ -83,6 +94,8 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
                 'company_username' => $tenant->company_username,
                 'status' => $tenant->status,
             ],
+            'user_type' => $userType,
+            'permissions' => $user->cachedPermissions(),
             'package' => [
                 'is_active' => $activeSubscription !== null,
                 'subscription' => $activeSubscription,
@@ -400,5 +413,13 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
 
         return false;
     }
-}
 
+    protected function resolveTenantUserType(User $user, Tenant $tenant): string
+    {
+        if ((string) $user->user_type !== '') {
+            return (string) $user->user_type;
+        }
+
+        return (int) $user->id === (int) $tenant->owner_user_id ? 'owner' : 'staff';
+    }
+}
