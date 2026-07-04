@@ -2,6 +2,8 @@
 
 namespace App\Http\Services\Response;
 
+use App\Enums\UserRole;
+use App\Enums\UserTypeEnum;
 use Illuminate\Support\Facades\Hash;
 
 class DataService
@@ -29,6 +31,11 @@ class DataService
         }
         if (!empty($request->role_module)) {
             $data['role_module'] = $request->role_module;
+            if ($request->role_module == enum(UserRole::USER_ROLE)) {
+                $data['user_type'] = enum(UserTypeEnum::OWNER);
+            } else {
+                $data['user_type'] = enum(UserTypeEnum::ADMIN);
+            }
         }
         if (!empty($request->role_id)) {
             $data['role_id'] = $request->role_id;

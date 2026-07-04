@@ -3,6 +3,7 @@
 namespace App\Http\Middleware\Tenant;
 
 use App\Http\Services\Tenant\TenantFeatureResolverService;
+use App\Models\StaffFeatureAssignment;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +39,45 @@ class EnsureTenantFeatureAccess
             ], 422);
         }
 
+        // Get authenticated user
+        $user = auth()->user();
+        if ($user && $user->user_type === 'staff') {
+            // Handle staff feature access
+            return $this->handleStaffFeatureAccess($request, $next, $featureKey, $user);
+        }
+
+        // Handle tenant admin/owner feature access
+        return $this->handleTenantFeatureAccess($request, $next, $featureKey, $tenant);
+    }
+
+    protected function handleStaffFeatureAccess(Request $request, Closure $next, string $featureKey, $user): Response
+    {
+        // Check if staff has access to the requested feature
+        $hasAccess = StaffFeatureAssignment::where('staff_id', $user->id)
+            ->where('feature_key', $featureKey)
+            ->where('is_accessible', true)
+            ->exists();
+
+        if (!$hasAccess) {
+            return response()->json([
+                'success' => false,
+                'message' => __('You do not have access to this feature'),
+                'data' => [
+                    'feature_key' => $featureKey,
+                ],
+                'status' => 403,
+                'error_message' => __('Feature access denied'),
+            ], 403);
+        }
+
+        $request->attributes->set('staff_feature_key', $featureKey);
+        $request->attributes->set('staff_feature_accessible', true);
+
+        return $next($request);
+    }
+
+    protected function handleTenantFeatureAccess(Request $request, Closure $next, string $featureKey, $tenant): Response
+    {
         $activeSubscription = $this->tenantFeatureResolverService->getActiveSubscription((int) $tenant->id);
         if (!$activeSubscription) {
             return response()->json([

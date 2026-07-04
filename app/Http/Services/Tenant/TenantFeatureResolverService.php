@@ -3,6 +3,7 @@
 namespace App\Http\Services\Tenant;
 
 use App\Models\PlanFeatureValue;
+use App\Models\StaffFeatureAssignment;
 use App\Models\Subscription;
 use Illuminate\Support\Facades\Cache;
 
@@ -95,6 +96,30 @@ class TenantFeatureResolverService
         Cache::forget($this->cacheKey($tenantId));
     }
 
+    public function getFeatureMapForStaff(int $tenantId, int $staffId): array
+    {
+        // Staff-specific cache key
+        $cacheKey = $this->staffCacheKey($tenantId, $staffId);
+
+        return Cache::remember($cacheKey, 600, function () use ($tenantId, $staffId) {
+            $tenantFeatureMap = $this->getFeatureMap($tenantId);
+
+            $staffAssignments = StaffFeatureAssignment::where('staff_id', $staffId)
+                ->where('is_accessible', true)
+                ->pluck('is_accessible', 'feature_key')
+                ->toArray();
+
+            $staffFeatureMap = [];
+            foreach ($staffAssignments as $featureKey => $isAccessible) {
+                if (isset($tenantFeatureMap[$featureKey]) && $isAccessible) {
+                    $staffFeatureMap[$featureKey] = $tenantFeatureMap[$featureKey];
+                }
+            }
+
+            return $staffFeatureMap;
+        });
+    }
+
     protected function extractSnapshotValue(mixed $jsonValue, string $type): mixed
     {
         if (is_array($jsonValue) && array_key_exists('value', $jsonValue) && $type !== 'json') {
@@ -125,5 +150,22 @@ class TenantFeatureResolverService
     protected function cacheKey(int $tenantId): string
     {
         return 'tenant_feature_map_' . $tenantId;
+    }
+
+    /**
+     * Get staff-specific cache key
+     */
+    protected function staffCacheKey(int $tenantId, int $staffId): string
+    {
+        return 'staff_feature_map_' . $tenantId . '_' . $staffId;
+    }
+
+    /**
+     * Clear staff-specific feature cache
+     */
+    public function clearStaffFeatureCache(int $tenantId, int $staffId): void
+    {
+        $cacheKey = $this->staffCacheKey($tenantId, $staffId);
+        Cache::forget($cacheKey);
     }
 }

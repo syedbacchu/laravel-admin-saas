@@ -5,6 +5,8 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 abstract class BaseRepository
 {
@@ -122,6 +124,22 @@ abstract class BaseRepository
 
     public function updateWhere(array $conditions, array $data): int
     {
+        $connection = $this->model->getConnectionName() ?: config('database.default');
+        if ($connection === 'tenant' && !array_key_exists('updated_by', $data)) {
+            $actorId = Auth::guard('api')->id() ?? Auth::id();
+            if ($actorId) {
+                static $columnCache = [];
+                $cacheKey = $connection . '.' . $this->model->getTable() . '.updated_by';
+                if (!array_key_exists($cacheKey, $columnCache)) {
+                    $columnCache[$cacheKey] = Schema::connection($connection)->hasColumn($this->model->getTable(), 'updated_by');
+                }
+
+                if ($columnCache[$cacheKey]) {
+                    $data['updated_by'] = (int) $actorId;
+                }
+            }
+        }
+
         $query = $this->model;
 
         foreach ($conditions as $column => $value) {

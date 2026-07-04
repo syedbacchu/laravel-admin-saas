@@ -116,4 +116,13 @@ class TenantStaffRepository extends BaseRepository implements TenantStaffReposit
             ->when($ignoreUserId, fn ($query) => $query->where('id', '!=', $ignoreUserId))
             ->exists();
     }
+
+    public function totalStaffCount(int $ownerUserId): int
+    {
+        return User::query()
+            ->where('role_module', enum(UserRole::USER_ROLE))
+            ->where('parent_id', $ownerUserId)
+            ->where('user_type', 'staff')
+            ->count();
+    }
 }

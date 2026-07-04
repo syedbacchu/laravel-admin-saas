@@ -66,15 +66,16 @@ class UserVerifyCodeService
         $validity = $request->validity ?? 5;
         $expiredAt = self::calExpireAt($validityType, $validity);
         if ($checkExist) {
-            $otpCode = $checkExist->code;
+            $randomCode = randomNumber(6);
             if ($isResend) {
-                $randomCode = randomNumber(6);
+
                 $checkExist->update([
                     'code' => $randomCode,
                     'expired_at' => $expiredAt
                 ]);
             } else {
                 $checkExist->update([
+                    'code' => $randomCode,
                     'expired_at' => $expiredAt
                 ]);
 

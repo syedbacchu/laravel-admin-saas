@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\StatusEnum;
 use App\Enums\UserRole;
+use App\Enums\UserTypeEnum;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -24,6 +25,7 @@ class AdminSeeder extends Seeder
                 'email_verified_at' => now(),
                 'role_module' => UserRole::SUPER_ADMIN_ROLE,
                 'status' => StatusEnum::ACTIVE,
+                'user_type' => enum(UserTypeEnum::ADMIN),
             ]
         );
 
@@ -36,6 +38,7 @@ class AdminSeeder extends Seeder
                 'email_verified_at' => now(),
                 'role_module' => UserRole::ADMIN_ROLE,
                 'status' => StatusEnum::ACTIVE,
+                'user_type' => enum(UserTypeEnum::ADMIN),
             ]
         );
     }

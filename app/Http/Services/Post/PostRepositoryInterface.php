@@ -13,4 +13,7 @@ interface PostRepositoryInterface extends BaseRepositoryInterface
     public function postList(Request $request): array;
     public function createPost(array $data): Model;
     public function findPublicBlogByIdentifier(string $identifier): ?Post;
+    public function getSimilarPublicBlogs(Post $post, int $limit = 6);
+    public function getLatestPublicBlogs(int $limit = 6);
+    public function getPublicBlogCategoriesWithCount();
 }

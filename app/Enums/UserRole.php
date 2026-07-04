@@ -56,7 +56,7 @@ enum UserRole: int
     {
         return [
             self::ADMIN_ROLE->value => 'Admin',
-            self::USER_ROLE->value => 'User',
+//            self::USER_ROLE->value => 'User',
         ];
     }
     public static function label(int $role): string

@@ -38,5 +38,12 @@ class AdminSettingSeeder extends Seeder
         AdminSettings::firstOrCreate(['slug' => 'pagination_count'], ['group' => enum(SettingGroupEnum::SETTING_GROUP_GENERAL),'value' => '10']);
         AdminSettings::firstOrCreate(['slug' => 'currency'],['group' => enum(SettingGroupEnum::SETTING_GROUP_GENERAL), 'value' => 'USD']);
         AdminSettings::firstOrCreate(['slug' => 'lang'], ['group' => enum(SettingGroupEnum::SETTING_GROUP_GENERAL),'value' => 'en']);
+
+        // Google Maps API Settings
+        AdminSettings::firstOrCreate(['slug' => 'google_maps_api_key'], ['group' => enum(SettingGroupEnum::SETTING_GROUP_GENERAL), 'value' => '']);
+
+        // Map Provider Settings
+        AdminSettings::firstOrCreate(['slug' => 'map_provider'], ['group' => enum(SettingGroupEnum::SETTING_GROUP_GENERAL), 'value' => 'google']);
+        AdminSettings::firstOrCreate(['slug' => 'barikoi_api_key'], ['group' => enum(SettingGroupEnum::SETTING_GROUP_GENERAL), 'value' => '']);
     }
 }

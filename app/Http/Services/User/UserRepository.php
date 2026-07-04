@@ -63,6 +63,9 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                 'role_module' => [
                     'column' => 'users.role_module'
                 ],
+                'user_type' => [
+                    'column' => 'users.user_type'
+                ],
                 'created_at' => [
                     'column' => 'users.created_at',
                     'type' => 'date'
@@ -80,6 +83,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                 'users.username',
                 'users.image',
                 'users.role_module',
+                'users.user_type',
                 'users.role_id',
                 'users.status',
                 'users.created_at',

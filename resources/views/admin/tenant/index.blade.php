@@ -27,6 +27,7 @@
                     ['data' => 'db_name', 'name' => 'db_name', 'title' => 'Database'],
                     ['data' => 'status', 'name' => 'status', 'title' => 'Status'],
                     ['data' => 'created_at', 'name' => 'created_at', 'title' => 'Created'],
+                    ['data' => 'actions', 'name' => 'actions', 'title' => 'Actions', 'orderable' => false, 'searchable' => false],
                 ]"
                 :filters="[
                     [
@@ -46,4 +47,45 @@
             />
         </div>
     </div>
+
+    <script>
+        function backupTenant(backupUrl, companyName) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!confirm('Are you sure you want to backup the database for ' + companyName + '?')) {
+                return false;
+            }
+
+            // Show loading state
+            const btn = event.target.closest('button');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Backing up...';
+
+            // Send AJAX request for backup
+            $.ajax({
+                url: backupUrl,
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+
+                    if (response.success) {
+                        alert('Backup completed successfully!');
+                    } else {
+                        alert('Backup failed: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function(xhr) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    alert('Backup failed: ' + (xhr.responseJSON?.message || 'Server error'));
+                }
+            });
+        }
+    </script>
 </x-layout.default>

@@ -71,13 +71,18 @@ class Handler extends ExceptionHandler
         }
 
         if ($exception instanceof ValidationException) {
+            $firstError = collect($exception->errors())
+                ->flatten()
+                ->filter()
+                ->first();
+
             return response()->json([
-                'status' => Response::HTTP_BAD_REQUEST,
+                'status' => 422,
                 'success' => false,
-                'message' => '',
-                'error_message' => $exception->getMessage(),
+                'message' => $firstError ?: ($exception->getMessage() ?: __('Validation failed')),
+                'error_message' => $firstError ?: ($exception->getMessage() ?: __('Validation failed')),
                 'data' => [],
-            ], Response::HTTP_BAD_REQUEST);
+            ], 422);
         }
 
         if ($exception instanceof ThrottleRequestsException) {

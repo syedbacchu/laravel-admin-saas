@@ -11,9 +11,11 @@ use App\Http\Controllers\Admin\Billing\PlanController;
 use App\Http\Controllers\Admin\Billing\SubscriptionController;
 use App\Http\Controllers\Admin\Billing\PaymentMethodController;
 use App\Http\Controllers\Admin\Billing\SubscriptionPaymentController;
+use App\Http\Controllers\Api\Admin\SubscriptionFeatureController;
 use App\Http\Controllers\Admin\Language\LanguageController;
 use App\Http\Controllers\Admin\Role\RoleController;
 use App\Http\Controllers\Admin\Settings\CustomFieldController;
+use App\Http\Controllers\Admin\Settings\DatabaseBackupController;
 use App\Http\Controllers\Admin\Settings\SettingsController;
 use App\Http\Controllers\Admin\Settings\SettingFieldController;
 use App\Http\Controllers\Admin\Tenant\TenantController;
@@ -21,7 +23,12 @@ use App\Http\Controllers\Admin\Post\PostCategoryController;
 use App\Http\Controllers\Admin\Post\PostCommentController;
 use App\Http\Controllers\Admin\Post\PostController;
 use App\Http\Controllers\Admin\Post\TagController;
+use App\Http\Controllers\Admin\Vehicle\AreaController;
+use App\Http\Controllers\Admin\Vehicle\RegistrationSerialController;
+use App\Http\Controllers\Admin\Vehicle\RegistrationZoneController;
 use App\Http\Controllers\Admin\User\UserController;
+use App\Http\Controllers\Admin\Vehicle\VehicleCategoryController;
+use App\Http\Controllers\Admin\Vehicle\VehicleCategorySizeController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -59,6 +66,11 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
         Route::get('/', [TenantController::class, 'index'])->name('list');
         Route::get('/create', [TenantController::class, 'create'])->name('create');
         Route::post('/', [TenantController::class, 'store'])->name('store');
+        Route::post('/backup/{id}', [TenantController::class, 'backup'])->name('backup');
+        Route::get('/backups/{id}', [TenantController::class, 'backups'])->name('backups');
+        Route::get('/download-backup/{tenant}/{filename}', [TenantController::class, 'downloadBackup'])->name('downloadBackup');
+        Route::get('/diagnose/{id}', [TenantController::class, 'diagnose'])->name('diagnose');
+        Route::delete('/backup/{tenant}/{filename}', [TenantController::class, 'deleteBackup'])->name('deleteBackup');
     });
 
     Route::resource('languages', LanguageController::class)
@@ -72,12 +84,12 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
             'update' => 'language.update',
             'show' => 'language.show',
         ]);
-    Route::group(['prefix' => 'languages', 'as' => 'language.', 'middleware' => ['skip.permission', 'no.permission.sync']], function () {
+    Route::group(['prefix' => 'languages', 'as' => 'language.'], function () {
         Route::get('language-delete/{id}', [LanguageController::class, 'destroy'])->name('delete');
         Route::post('publish', [LanguageController::class, 'languageStatus'])->name('publish');
     });
 
-    Route::group(['prefix' => 'billing', 'middleware' => ['skip.permission', 'no.permission.sync']], function () {
+    Route::group(['prefix' => 'billing'], function () {
         Route::resource('features', FeatureController::class)
             ->except(['destroy'])
             ->names([
@@ -102,6 +114,8 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
             ]);
         Route::get('plans-delete/{id}', [PlanController::class, 'destroy'])->name('plan.delete');
 
+
+
         Route::resource('subscriptions', SubscriptionController::class)
             ->except(['destroy'])
             ->names([
@@ -113,6 +127,16 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
                 'show' => 'subscription.show',
             ]);
         Route::get('subscriptions-delete/{id}', [SubscriptionController::class, 'destroy'])->name('subscription.delete');
+        // Update Plan Features Routes (must be before resource routes and more specific)
+        Route::get('subscription-update-plan/{subscription}', [SubscriptionController::class, 'updatePlanView'])
+            ->where('subscription', '[0-9]+')
+            ->name('subscription.updatePlan');
+        Route::post('subscription-update-plan/{subscription}', [SubscriptionController::class, 'updatePlanSave'])
+            ->where('subscription', '[0-9]+')
+            ->name('subscription.updatePlanSave');
+        Route::post('subscription-update-plan/{subscription}/plan', [SubscriptionController::class, 'updateSubscriptionPlan'])
+            ->where('subscription', '[0-9]+')
+            ->name('subscription.updatePlanPlan');
 
         Route::resource('payment-methods', PaymentMethodController::class)
             ->except(['destroy'])
@@ -139,6 +163,17 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
             ]);
         Route::get('subscription-payments-delete/{id}', [SubscriptionPaymentController::class, 'destroy'])->name('subscriptionPayment.delete');
         Route::get('subscription-payments-report', [SubscriptionPaymentController::class, 'report'])->name('subscriptionPayment.report');
+
+        // Subscription Feature Management
+        Route::prefix('subscription-features')->name('subscriptionFeatures.')->group(function() {
+            Route::get('{subscriptionId}', [SubscriptionFeatureController::class, 'index'])->name('index');
+            Route::post('{subscriptionId}', [SubscriptionFeatureController::class, 'store'])->name('store');
+            Route::put('{subscriptionId}/{featureKey}', [SubscriptionFeatureController::class, 'update'])->name('update');
+            Route::delete('{subscriptionId}/{featureKey}', [SubscriptionFeatureController::class, 'destroy'])->name('destroy');
+            Route::post('apply-to-all', [SubscriptionFeatureController::class, 'applyToAll'])->name('applyToAll');
+            Route::post('{subscriptionId}/refresh-from-plan', [SubscriptionFeatureController::class, 'refreshFromPlan'])->name('refreshFromPlan');
+            Route::get('plan/{planId}', [SubscriptionFeatureController::class, 'planSubscriptions'])->name('planSubscriptions');
+        });
     });
 
     // General Setting
@@ -154,6 +189,24 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
     Route::group(['prefix' => 'settings', 'as' => 'settings.'], function () {
         Route::get('/', [SettingsController::class, 'index'])->name('generalSetting');
         Route::post('/settings/{group}', [SettingsController::class, 'update'])->name('update');
+    });
+
+    // Database Backup
+    Route::resource('database-backups', DatabaseBackupController::class)
+        ->except(['destroy'])
+        ->names([
+            'index' => 'databaseBackup.list',
+            'create' => 'databaseBackup.create',
+            'store' => 'databaseBackup.store',
+            'show' => 'databaseBackup.show',
+            'update' => 'databaseBackup.update',
+            'edit' => 'databaseBackup.edit',
+        ]);
+
+    Route::group(['prefix' => 'database-backups', 'as' => 'databaseBackup.'], function () {
+        Route::get('download/{id}', [DatabaseBackupController::class, 'download'])->name('download');
+        Route::delete('{id}', [DatabaseBackupController::class, 'destroy'])->name('delete');
+        Route::get('statistics', [DatabaseBackupController::class, 'statistics'])->name('statistics');
     });
 
 

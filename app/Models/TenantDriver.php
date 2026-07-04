@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class TenantDriver extends Model
 {
@@ -15,25 +15,32 @@ class TenantDriver extends Model
     protected $table = 'drivers';
 
     protected $fillable = [
-        'vehicle_id',
+        'vehicle_category_id',
         'name',
         'phone',
+        'emergency_contact',
         'license_no',
+        'license_expired_date',
         'nid_no',
+        'image',
         'joining_date',
         'address',
         'notes',
+        'opening_balance',
         'status',
     ];
 
     protected $casts = [
-        'vehicle_id' => 'integer',
+        'vehicle_category_id' => 'integer',
+        'license_expired_date' => 'date',
         'joining_date' => 'date',
+        'opening_balance' => 'decimal:2',
         'status' => 'integer',
     ];
 
-    public function vehicle(): BelongsTo
+    public function vehicles(): BelongsToMany
     {
-        return $this->belongsTo(TenantVehicle::class, 'vehicle_id');
+        return $this->belongsToMany(TenantVehicle::class, 'vehicle_driver_assignments', 'driver_id', 'vehicle_id')
+            ->withTimestamps();
     }
 }

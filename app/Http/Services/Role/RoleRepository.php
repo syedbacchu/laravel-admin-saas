@@ -108,7 +108,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
     public function getModulePermissions($guard = null): Collection {
         $query = Permission::query();
 
-        if (!empty($type)) {
+        if (!empty($guard)) {
             $query->where('guard', $guard);
         }
 

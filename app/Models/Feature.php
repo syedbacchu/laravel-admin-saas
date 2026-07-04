@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Feature extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $fillable = [
         'key',
@@ -16,6 +17,8 @@ class Feature extends Model
         'description',
         'value_type',
         'is_active',
+        'is_group',
+        'group'
     ];
 
     protected $casts = [

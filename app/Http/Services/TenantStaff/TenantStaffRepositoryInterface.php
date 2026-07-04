@@ -15,4 +15,5 @@ interface TenantStaffRepositoryInterface extends BaseRepositoryInterface
     public function findDriverUser(int $ownerUserId, int $tenantDriverId): ?User;
     public function findTenantUserByIdentifier(int $ownerUserId, string $field, string $value, ?int $ignoreUserId = null): ?User;
     public function usernameExists(string $username, ?int $ignoreUserId = null): bool;
+    public function totalStaffCount(int $ownerUserId): int;
 }

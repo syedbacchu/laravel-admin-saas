@@ -8,6 +8,8 @@ use App\Observers\RoleObserver;
 use App\Observers\UserObserver;
 use App\Support\SidebarMenu;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -36,6 +38,60 @@ class AppServiceProvider extends ServiceProvider
     {
         User::observe(UserObserver::class);
         Role::observe(RoleObserver::class);
+
+        $resolveActorId = static function (): ?int {
+            $id = Auth::guard('api')->id() ?? Auth::id();
+            return $id ? (int) $id : null;
+        };
+
+        $hasColumn = static function (Model $model, string $column): bool {
+            static $cache = [];
+
+            $connection = $model->getConnectionName() ?: config('database.default');
+            $key = $connection . '.' . $model->getTable() . '.' . $column;
+
+            if (!array_key_exists($key, $cache)) {
+                $cache[$key] = Schema::connection($connection)->hasColumn($model->getTable(), $column);
+            }
+
+            return $cache[$key];
+        };
+
+        Model::creating(function (Model $model) use ($resolveActorId, $hasColumn): void {
+            $connection = $model->getConnectionName() ?: config('database.default');
+            if ($connection !== 'tenant') {
+                return;
+            }
+
+            $actorId = $resolveActorId();
+            if (!$actorId) {
+                return;
+            }
+
+            if ($hasColumn($model, 'added_by') && !$model->getAttribute('added_by')) {
+                $model->setAttribute('added_by', $actorId);
+            }
+
+            if ($hasColumn($model, 'updated_by')) {
+                $model->setAttribute('updated_by', $actorId);
+            }
+        });
+
+        Model::updating(function (Model $model) use ($resolveActorId, $hasColumn): void {
+            $connection = $model->getConnectionName() ?: config('database.default');
+            if ($connection !== 'tenant') {
+                return;
+            }
+
+            $actorId = $resolveActorId();
+            if (!$actorId) {
+                return;
+            }
+
+            if ($hasColumn($model, 'updated_by')) {
+                $model->setAttribute('updated_by', $actorId);
+            }
+        });
 
         View::composer('*', function ($view) {
             $view->with('sidebarMenus', SidebarMenu::get());

@@ -19,5 +19,8 @@ interface TenantApiServiceInterface
     public function changePassword(TenantChangePasswordRequest $request): array;
     public function subscriptionDetails(Request $request): array;
     public function dashboardData(Request $request): array;
+    public function dashboardSummary(Request $request): array;
+    public function vehicleAlertsList(Request $request): array;
+    public function maintenanceAlertsList(Request $request): array;
 }
 

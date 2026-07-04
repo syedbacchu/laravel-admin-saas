@@ -41,6 +41,7 @@ class BlogDetailsResource extends JsonResource
                 'name' => $tag->name,
                 'slug' => $tag->slug,
             ])->values(),
+            'similar_blogs' => BlogListResource::collection($this->whenLoaded('similarBlogs')),
             'created_at' => optional($this->created_at)->toDateTimeString(),
             'updated_at' => optional($this->updated_at)->toDateTimeString(),
         ];

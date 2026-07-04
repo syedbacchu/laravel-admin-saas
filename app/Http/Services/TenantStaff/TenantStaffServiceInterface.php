@@ -17,5 +17,7 @@ interface TenantStaffServiceInterface
     public function deleteStaff(Request $request, int $id): array;
     public function resetStaffPassword(TenantStaffResetPasswordRequest $request, int $id): array;
     public function createDriverLogin(TenantDriverLoginCreateRequest $request, int $driverId): array;
+    public function getStaffFeatures(Request $request, int $staffId): array;
+    public function updateStaffFeatures(Request $request, int $staffId): array;
 }
 

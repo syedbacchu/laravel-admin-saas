@@ -36,6 +36,7 @@ class Viewed
         'subscription' => [
             'list' => 'admin.billing.subscription.index',
             'create' => 'admin.billing.subscription.create',
+            'update-plan' => 'admin.billing.subscription.update-plan',
         ],
         'paymentMethod' => [
             'list' => 'admin.billing.payment_method.index',
@@ -49,6 +50,7 @@ class Viewed
         'tenant' => [
             'list' => 'admin.tenant.index',
             'create' => 'admin.tenant.create',
+            'backups' => 'admin.tenant.backups',
         ],
         'file' => [
             'list_data'  => 'admin.file_manager.list',
@@ -97,6 +99,10 @@ class Viewed
             'list' => 'admin.post.comment.index',
             'reply' => 'admin.post.comment.reply',
         ],
+        'databaseBackup' => [
+            'list' => 'admin.database_backup.list',
+            'create' => 'admin.database_backup.create',
+        ]
     ];
 
     /**

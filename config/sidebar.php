@@ -7,12 +7,12 @@ return [
         'label' => 'Dashboard',
         'route' => 'dashboard',
         'icon' => 'dashboard',
-        'permission' => 'dashboard',
+        'permission' => null,
     ],
     [
         'key' => 'users',
         'label' => 'User Management',
-        'icon' => 'user',
+        'icon' => 'users',
         'permission' => null,
         'children' => [
             [
@@ -28,108 +28,9 @@ return [
         ],
     ],
     [
-        'key' => 'tenants',
-        'label' => 'Tenants',
-        'icon' => 'user',
-        'permission' => null,
-        'children' => [
-            [
-                'label' => 'Tenant List',
-                'route' => 'tenant.list',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Create Tenant',
-                'route' => 'tenant.create',
-                'permission' => null,
-            ],
-        ],
-    ],
-    [
-        'key' => 'billing',
-        'label' => 'Billing',
-        'icon' => 'settings',
-        'permission' => null,
-        'children' => [
-            [
-                'label' => 'Feature List',
-                'route' => 'feature.list',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Create Feature',
-                'route' => 'feature.create',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Plan List',
-                'route' => 'plan.list',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Create Plan',
-                'route' => 'plan.create',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Subscription List',
-                'route' => 'subscription.list',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Create Subscription',
-                'route' => 'subscription.create',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Payment Method List',
-                'route' => 'paymentMethod.list',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Create Payment Method',
-                'route' => 'paymentMethod.create',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Subscription Payment List',
-                'route' => 'subscriptionPayment.list',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Create Subscription Payment',
-                'route' => 'subscriptionPayment.create',
-                'permission' => null,
-            ],
-            [
-                'label' => 'Payment Report',
-                'route' => 'subscriptionPayment.report',
-                'permission' => null,
-            ],
-        ],
-    ],
-    [
-        'key' => 'app',
-        'label' => 'App Setup',
-        'icon' => 'app',
-        'permission' => null,
-        'children' => [
-            [
-                'label' => 'Slider',
-                'route' => 'appSlider.list',
-                'permission' => 'appSlider.list',
-            ],
-            [
-                'label' => 'Slider Create',
-                'route' => 'appSlider.create',
-                'permission' => 'appSlider.create',
-            ],
-        ],
-    ],
-    [
         'key' => 'role',
         'label' => 'Role Management',
-        'icon' => 'role',
+        'icon' => 'shield',
         'permission' => null,
         'children' => [
             [
@@ -154,7 +55,105 @@ return [
             ],
         ],
     ],
-
+    [
+        'key' => 'tenants',
+        'label' => 'Tenants',
+        'icon' => 'building',
+        'permission' => null,
+        'children' => [
+            [
+                'label' => 'Tenant List',
+                'route' => 'tenant.list',
+                'permission' => 'tenant.list',
+            ],
+            [
+                'label' => 'Create Tenant',
+                'route' => 'tenant.create',
+                'permission' => 'tenant.create',
+            ],
+        ],
+    ],
+    [
+        'key' => 'billing',
+        'label' => 'Billing',
+        'icon' => 'credit-card',
+        'permission' => null,
+        'children' => [
+            [
+                'label' => 'Feature List',
+                'route' => 'feature.list',
+                'permission' => 'feature.list',
+            ],
+            [
+                'label' => 'Create Feature',
+                'route' => 'feature.create',
+                'permission' => 'feature.create',
+            ],
+            [
+                'label' => 'Plan List',
+                'route' => 'plan.list',
+                'permission' => 'plan.list',
+            ],
+            [
+                'label' => 'Create Plan',
+                'route' => 'plan.create',
+                'permission' => 'plan.create',
+            ],
+            [
+                'label' => 'Subscription List',
+                'route' => 'subscription.list',
+                'permission' => 'subscription.list',
+            ],
+            [
+                'label' => 'Create Subscription',
+                'route' => 'subscription.create',
+                'permission' => 'subscription.create',
+            ],
+            [
+                'label' => 'Payment Method List',
+                'route' => 'paymentMethod.list',
+                'permission' => 'paymentMethod.list',
+            ],
+            [
+                'label' => 'Create Payment Method',
+                'route' => 'paymentMethod.create',
+                'permission' => 'paymentMethod.create',
+            ],
+            [
+                'label' => 'Subscription Payment List',
+                'route' => 'subscriptionPayment.list',
+                'permission' => 'subscriptionPayment.list',
+            ],
+            [
+                'label' => 'Create Subscription Payment',
+                'route' => 'subscriptionPayment.create',
+                'permission' => 'subscriptionPayment.create',
+            ],
+            [
+                'label' => 'Payment Report',
+                'route' => 'subscriptionPayment.report',
+                'permission' => 'subscriptionPayment.report',
+            ],
+        ],
+    ],
+    [
+        'key' => 'app',
+        'label' => 'App Setup',
+        'icon' => 'app',
+        'permission' => null,
+        'children' => [
+            [
+                'label' => 'Slider',
+                'route' => 'appSlider.list',
+                'permission' => 'appSlider.list',
+            ],
+            [
+                'label' => 'Slider Create',
+                'route' => 'appSlider.create',
+                'permission' => 'appSlider.create',
+            ],
+        ],
+    ],
     [
         'key' => 'faq',
         'label' => 'FAQ',
@@ -176,7 +175,7 @@ return [
     [
         'key' => 'blog',
         'label' => 'Blog',
-        'icon' => 'faq',
+        'icon' => 'newspaper',
         'permission' => null,
         'children' => [
             [
@@ -250,12 +249,17 @@ return [
             [
                 'label' => 'Language List',
                 'route' => 'language.list',
-                'permission' => null,
+                'permission' => 'language.list',
             ],
             [
                 'label' => 'Create Language',
                 'route' => 'language.create',
-                'permission' => null,
+                'permission' => 'language.create',
+            ],
+            [
+                'label' => 'Database Backups',
+                'route' => 'databaseBackup.list',
+                'permission' => 'databaseBackup.list',
             ],
         ],
     ],

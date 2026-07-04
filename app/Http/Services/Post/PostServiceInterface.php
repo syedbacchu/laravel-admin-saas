@@ -15,4 +15,5 @@ interface PostServiceInterface
     public function postCreateData($request): array;
     public function getPublicBlogList(Request $request): array;
     public function getPublicBlogDetails(string $identifier): array;
+    public function getPublicBlogSummary(): array;
 }

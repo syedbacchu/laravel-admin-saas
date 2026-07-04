@@ -36,5 +36,10 @@ class SettingFieldSeeder extends Seeder
         SettingsField::firstOrCreate(['slug' => 'login_logo'],['group' => enum(SettingGroupEnum::SETTING_GROUP_LOGO), 'label' => 'Login Logo', 'type' => 'file' ]);
         SettingsField::firstOrCreate(['slug' => 'login_sidebar_image'],['group' => enum(SettingGroupEnum::SETTING_GROUP_LOGO), 'label' => 'Login Sidebar Image', 'type' => 'file' ]);
         SettingsField::firstOrCreate(['slug' => 'favicon'],['group' => enum(SettingGroupEnum::SETTING_GROUP_LOGO), 'label' => 'Favicon', 'type' => 'file' ]);
+
+        // Map Provider Settings
+        SettingsField::firstOrCreate(['slug' => 'map_provider'],['group' => enum(SettingGroupEnum::SETTING_GROUP_GENERAL), 'label' => 'Map Provider', 'type' => 'select', 'options' => ['google', 'barikoi']]);
+        SettingsField::firstOrCreate(['slug' => 'google_maps_api_key'],['group' => enum(SettingGroupEnum::SETTING_GROUP_GENERAL), 'label' => 'Google Maps API Key', 'type' => 'password']);
+        SettingsField::firstOrCreate(['slug' => 'barikoi_api_key'],['group' => enum(SettingGroupEnum::SETTING_GROUP_GENERAL), 'label' => 'Barikoi API Key', 'type' => 'password']);
     }
 }

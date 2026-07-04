@@ -32,8 +32,9 @@ class PlanService extends BaseService implements PlanServiceInterface
     {
         $features = Feature::query()
             ->where('is_active', 1)
+            ->orderBy('group')
             ->orderBy('key')
-            ->get(['id', 'key', 'name', 'value_type']);
+            ->get(['id', 'key', 'name', 'value_type', 'group']);
 
         $languages = Language::query()
             ->forInput()

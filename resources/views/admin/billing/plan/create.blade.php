@@ -120,57 +120,78 @@
             </div>
 
             <h5 class="text-xl font-semi-bold text-gray-600 dark:text-gray-100 mt-8 mb-4">{{ __('Plan Features') }}</h5>
-            <div class="overflow-x-auto border rounded-lg">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-3 py-2 text-left">{{ __('Assign') }}</th>
-                            <th class="px-3 py-2 text-left">{{ __('Feature') }}</th>
-                            <th class="px-3 py-2 text-left">{{ __('Key') }}</th>
-                            <th class="px-3 py-2 text-left">{{ __('Type') }}</th>
-                            <th class="px-3 py-2 text-left">{{ __('Value') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($features as $feature)
-                            @php
-                                $existing = $featureValueMap->get($feature->id);
-                                $assignedOld = old("feature_assign.{$feature->id}");
-                                $isAssigned = $assignedOld !== null ? (string) $assignedOld === '1' : (bool) $existing;
-                            @endphp
-                            <tr class="border-t">
-                                <td class="px-3 py-2 align-top">
-                                    <input type="checkbox" name="feature_assign[{{ $feature->id }}]" value="1" {{ $isAssigned ? 'checked' : '' }} />
-                                </td>
-                                <td class="px-3 py-2 align-top">{{ $feature->name }}</td>
-                                <td class="px-3 py-2 align-top">{{ $feature->key }}</td>
-                                <td class="px-3 py-2 align-top">{{ ucfirst($feature->value_type) }}</td>
-                                <td class="px-3 py-2 align-top">
-                                    @if($feature->value_type === 'boolean')
-                                        @php
-                                            $boolValue = old("feature_values.{$feature->id}.value_bool");
-                                            if ($boolValue === null) {
-                                                $boolValue = $existing ? ((int) ($existing->value_bool ? 1 : 0)) : 1;
-                                            }
-                                        @endphp
-                                        <select name="feature_values[{{ $feature->id }}][value_bool]" class="form-select">
-                                            <option value="1" {{ (string) $boolValue === '1' ? 'selected' : '' }}>Yes</option>
-                                            <option value="0" {{ (string) $boolValue === '0' ? 'selected' : '' }}>No</option>
-                                        </select>
-                                    @elseif($feature->value_type === 'integer')
-                                        <input type="number" class="form-input" name="feature_values[{{ $feature->id }}][value_int]" value="{{ old("feature_values.{$feature->id}.value_int", $existing->value_int ?? '') }}" />
-                                    @elseif($feature->value_type === 'decimal')
-                                        <input type="number" step="0.01" class="form-input" name="feature_values[{{ $feature->id }}][value_decimal]" value="{{ old("feature_values.{$feature->id}.value_decimal", $existing->value_decimal ?? '') }}" />
-                                    @elseif($feature->value_type === 'json')
-                                        <textarea class="form-textarea min-h-[70px]" name="feature_values[{{ $feature->id }}][value_json]">{{ old("feature_values.{$feature->id}.value_json", isset($existing->value_json) ? json_encode($existing->value_json) : '') }}</textarea>
-                                    @else
-                                        <input type="text" class="form-input" name="feature_values[{{ $feature->id }}][value_text]" value="{{ old("feature_values.{$feature->id}.value_text", $existing->value_text ?? '') }}" />
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+
+            @php
+                $groupedFeatures = $features->groupBy('group');
+            @endphp
+
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
+                @foreach($groupedFeatures as $group => $groupFeatures)
+                <div class="mt-6" x-data="{ selectAll: false, updateSelectAll() { const checkboxes = $el.closest('.mt-6').querySelectorAll('.feature-checkbox'); selectAll = Array.from(checkboxes).every(cb => cb.checked) && checkboxes.length > 0; } }" x-init="updateSelectAll()">
+                    <div class="flex items-center justify-between mb-3">
+                        <h6 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                            {{ ucwords(str_replace('_', ' ', $group ?? 'Ungrouped')) }}
+                        </h6>
+                        <label class="inline-flex items-center gap-2 text-sm">
+                            <input type="checkbox" class="form-checkbox" x-model="selectAll" @change="$el.closest('.mt-6').querySelectorAll('.feature-checkbox').forEach(cb => cb.checked = $el.checked)">
+                            <span>{{ __('Select All') }}</span>
+                        </label>
+                    </div>
+
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left">{{ __('Assign') }}</th>
+                                    <th class="px-3 py-2 text-left">{{ __('Feature') }}</th>
+                                    <th class="px-3 py-2 text-left">{{ __('Key') }}</th>
+                                    <th class="px-3 py-2 text-left">{{ __('Type') }}</th>
+                                    <th class="px-3 py-2 text-left">{{ __('Value') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($groupFeatures as $feature)
+                                    @php
+                                        $existing = $featureValueMap->get($feature->id);
+                                        $assignedOld = old("feature_assign.{$feature->id}");
+                                        $isAssigned = $assignedOld !== null ? (string) $assignedOld === '1' : (bool) $existing;
+                                    @endphp
+                                    <tr class="border-t {{ $loop->even ? 'bg-gray-50 dark:bg-gray-800/50' : '' }}">
+                                        <td class="px-3 py-2 align-top">
+                                            <input type="checkbox" class="feature-checkbox" name="feature_assign[{{ $feature->id }}]" value="1" {{ $isAssigned ? 'checked' : '' }} @change="$el.closest('.mt-6').updateSelectAll()" />
+                                        </td>
+                                        <td class="px-3 py-2 align-top">{{ $feature->name }}</td>
+                                        <td class="px-3 py-2 align-top">{{ $feature->key }}</td>
+                                        <td class="px-3 py-2 align-top">{{ ucfirst($feature->value_type) }}</td>
+                                        <td class="px-3 py-2 align-top">
+                                            @if($feature->value_type === 'boolean')
+                                                @php
+                                                    $boolValue = old("feature_values.{$feature->id}.value_bool");
+                                                    if ($boolValue === null) {
+                                                        $boolValue = $existing ? ((int) ($existing->value_bool ? 1 : 0)) : 1;
+                                                    }
+                                                @endphp
+                                                <select name="feature_values[{{ $feature->id }}][value_bool]" class="form-select">
+                                                    <option value="1" {{ (string) $boolValue === '1' ? 'selected' : '' }}>Yes</option>
+                                                    <option value="0" {{ (string) $boolValue === '0' ? 'selected' : '' }}>No</option>
+                                                </select>
+                                            @elseif($feature->value_type === 'integer')
+                                                <input type="number" class="form-input" name="feature_values[{{ $feature->id }}][value_int]" value="{{ old("feature_values.{$feature->id}.value_int", $existing->value_int ?? '') }}" />
+                                            @elseif($feature->value_type === 'decimal')
+                                                <input type="number" step="0.01" class="form-input" name="feature_values[{{ $feature->id }}][value_decimal]" value="{{ old("feature_values.{$feature->id}.value_decimal", $existing->value_decimal ?? '') }}" />
+                                            @elseif($feature->value_type === 'json')
+                                                <textarea class="form-textarea min-h-[70px]" name="feature_values[{{ $feature->id }}][value_json]">{{ old("feature_values.{$feature->id}.value_json", isset($existing->value_json) ? json_encode($existing->value_json) : '') }}</textarea>
+                                            @else
+                                                <input type="text" class="form-input" name="feature_values[{{ $feature->id }}][value_text]" value="{{ old("feature_values.{$feature->id}.value_text", $existing->value_text ?? '') }}" />
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endforeach
             </div>
 
             <h5 class="text-xl font-semi-bold text-gray-600 dark:text-gray-100 mt-8 mb-4">{{ __('Pricing Terms') }}</h5>

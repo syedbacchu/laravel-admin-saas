@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\User;
 
 use App\Enums\StatusEnum;
 use App\Enums\UserRole;
+use App\Enums\UserTypeEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\UpdatePasswordRequest;
 use App\Http\Requests\User\UpdateProfileRequest;
@@ -35,7 +36,7 @@ class UserController extends Controller
                 'id' => [Auth::id()],
                 'role_module' => [enum(UserRole::SUPER_ADMIN_ROLE)]
             ];
-            $request->merge(['notIn' => $notIn]);
+            $request->merge(['notIn' => $notIn, 'user_type' => enum(UserTypeEnum::ADMIN)]);
             return DataListManager::dataTableHandle(
                 request: $request,
                 dataProvider: function ($request) {
@@ -57,7 +58,7 @@ class UserController extends Controller
                     'created_at' => fn ($item) =>
                     $item->created_at?->diffForHumans(),
                     'role_module' => fn ($item) =>
-                    UserRole::label($item->role_module),
+                    !empty($item->role_id) ? $item->role_id : UserRole::label($item->role_module),
                     'phone' => fn ($item) =>
                     $item->phone . '<br>' .$item->email,
 

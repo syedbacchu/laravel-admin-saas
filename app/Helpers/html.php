@@ -130,6 +130,27 @@ if (!function_exists('toggle_column')) {
     }
 }
 
+if (! function_exists('download_column')) {
+    function download_column(string $route, string $label = 'Download'): string
+    {
+        return <<<HTML
+        <a href="{$route}"
+            title="{$label}"
+            class="inline-flex items-center justify-center w-8 h-8 text-green-600 hover:text-white hover:bg-green-600 border border-green-600 rounded-lg transition duration-200"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+        </a>
+        HTML;
+    }
+}
+
 if (! function_exists('view_button')) {
     function view_button(int|string $id, string $label = 'View'): string
     {

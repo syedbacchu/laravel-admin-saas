@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('phone_code',20)->default('88');
             $table->string('password')->nullable();
             $table->tinyInteger('role_module')->default(3)->comment("1= super admin, 2 = admin, 3 = tenant");
+            $table->string('user_type', 30)->nullable();
+            $table->unsignedBigInteger('tenant_driver_id')->nullable();
             $table->unsignedBigInteger('role_id')->nullable();
             $table->tinyInteger('enable_login')->default(1);
             $table->tinyInteger('status')->default(0);
@@ -68,6 +70,8 @@ return new class extends Migration
 
             // Indexes
             $table->index(["phone", "status"]);
+            $table->index(['user_type'], 'users_user_type_idx');
+            $table->index(['tenant_driver_id'], 'users_tenant_driver_id_idx');
 
         });
     }

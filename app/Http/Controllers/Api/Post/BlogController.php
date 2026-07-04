@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Post;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BlogCategoryListResource;
 use App\Http\Resources\BlogDetailsResource;
 use App\Http\Resources\BlogListResource;
 use App\Http\Services\Post\PostServiceInterface;
@@ -39,6 +40,22 @@ class BlogController extends Controller
 
         if (($response['success'] ?? false) === true && isset($response['data'])) {
             $response['data'] = BlogDetailsResource::make($response['data']);
+        }
+
+        return ResponseService::send($response);
+    }
+
+    public function summary(): JsonResponse
+    {
+        $response = $this->service->getPublicBlogSummary();
+
+        if (($response['success'] ?? false) === true && isset($response['data'])) {
+            $response['data']['latest_blogs'] = BlogListResource::collection(
+                $response['data']['latest_blogs'] ?? []
+            );
+            $response['data']['categories'] = BlogCategoryListResource::collection(
+                $response['data']['categories'] ?? []
+            );
         }
 
         return ResponseService::send($response);

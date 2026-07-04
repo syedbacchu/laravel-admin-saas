@@ -1,8 +1,8 @@
 <div :class="{ 'dark text-white-dark': $store.app.semidark }">
     <nav x-data="sidebar"
         class="sidebar fixed min-h-screen h-full top-0 bottom-0 w-[260px] shadow-[5px_0_25px_0_rgba(94,92,154,0.1)] z-50 transition-all duration-300">
-        <div class="bg-white dark:bg-[#0e1726] h-full">
-            <div class="flex justify-between items-center px-4 py-3">
+        <div class="bg-white dark:bg-[#0e1726] h-full flex flex-col">
+            <div class="flex justify-between items-center px-4 py-3 shrink-0">
                 <a href="/" class="main-logo flex items-center shrink-0">
                     <img class="w-20 ml-[5px] flex-none" src="{{asset('assets/images/logo.png')}}"
                         alt="image" />
@@ -21,7 +21,9 @@
                     </svg>
                 </a>
             </div>
-            <x-common.menu />
+            <div class="flex-1 overflow-y-auto overflow-x-hidden">
+                <x-common.menu />
+            </div>
         </div>
     </nav>
 </div>

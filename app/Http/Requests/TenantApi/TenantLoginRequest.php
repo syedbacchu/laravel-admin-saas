@@ -43,6 +43,7 @@ class TenantLoginRequest extends BaseFormRequest
             'login' => [trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
+                'time' => $this->formatThrottleDuration($seconds),
             ])],
         ]);
     }
@@ -53,5 +54,20 @@ class TenantLoginRequest extends BaseFormRequest
             Str::lower($companyUsername . '|' . $this->input('login')) . '|' . $this->ip()
         );
     }
-}
 
+    protected function formatThrottleDuration(int $seconds): string
+    {
+        $minutes = intdiv($seconds, 60);
+        $remainingSeconds = $seconds % 60;
+
+        if ($minutes <= 0) {
+            return $remainingSeconds . ' second' . ($remainingSeconds === 1 ? '' : 's');
+        }
+
+        if ($remainingSeconds <= 0) {
+            return $minutes . ' min';
+        }
+
+        return $minutes . ' min ' . $remainingSeconds . ' second' . ($remainingSeconds === 1 ? '' : 's');
+    }
+}

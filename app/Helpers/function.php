@@ -77,7 +77,7 @@ function randomNumber($a = 10)
     return $z;
 }
 
-function settings(string $key = null, $default = null):mixed
+function settings(?string $key = null, $default = null): mixed
 {
     if ($key === null) {
         return Settings::all();

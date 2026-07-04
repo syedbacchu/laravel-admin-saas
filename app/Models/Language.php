@@ -57,4 +57,29 @@ class Language extends Model
     {
         return $this->hasMany(PaymentMethodTranslation::class);
     }
+
+    public function vehicleCategoryTranslations(): HasMany
+    {
+        return $this->hasMany(VehicleCategoryTranslation::class);
+    }
+
+    public function vehicleCategorySizeTranslations(): HasMany
+    {
+        return $this->hasMany(VehicleCategorySizeTranslation::class);
+    }
+
+    public function registrationSerialTranslations(): HasMany
+    {
+        return $this->hasMany(RegistrationSerialTranslation::class);
+    }
+
+    public function registrationZoneTranslations(): HasMany
+    {
+        return $this->hasMany(RegistrationZoneTranslation::class);
+    }
+
+    public function areaTranslations(): HasMany
+    {
+        return $this->hasMany(AreaTranslation::class);
+    }
 }

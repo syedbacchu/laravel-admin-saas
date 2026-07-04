@@ -24,7 +24,6 @@ class AuthController extends Controller
     public function login(TenantLoginRequest $request, string $company_username): JsonResponse
     {
         $response = $this->service->login($request, $company_username);
-
         if (($response['success'] ?? false) === true) {
             if (isset($response['data']['user'])) {
                 $response['data']['user'] = TenantUserResource::make($response['data']['user']);

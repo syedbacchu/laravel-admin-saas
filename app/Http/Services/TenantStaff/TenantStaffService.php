@@ -8,6 +8,7 @@ use App\Http\Requests\TenantApi\TenantStaffCreateRequest;
 use App\Http\Requests\TenantApi\TenantStaffResetPasswordRequest;
 use App\Http\Requests\TenantApi\TenantStaffUpdateRequest;
 use App\Http\Services\BaseService;
+use App\Http\Services\Tenant\TenantFeatureResolverService;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\TenantDriver;
@@ -19,11 +20,18 @@ use Throwable;
 class TenantStaffService extends BaseService implements TenantStaffServiceInterface
 {
     protected TenantStaffRepositoryInterface $tenantStaffRepository;
+    protected StaffFeatureRepositoryInterface $staffFeatureRepository;
+    protected TenantFeatureResolverService $featureResolver;
 
-    public function __construct(TenantStaffRepositoryInterface $repository)
-    {
+    public function __construct(
+        TenantStaffRepositoryInterface $repository,
+        StaffFeatureRepositoryInterface $staffFeatureRepository,
+        TenantFeatureResolverService $featureResolver
+    ) {
         parent::__construct($repository);
         $this->tenantStaffRepository = $repository;
+        $this->staffFeatureRepository = $staffFeatureRepository;
+        $this->featureResolver = $featureResolver;
     }
 
     public function staffList(Request $request): array
@@ -36,6 +44,11 @@ class TenantStaffService extends BaseService implements TenantStaffServiceInterf
         $ownerUserId = (int) $tenant->owner_user_id;
         if (!$this->isOwnerUser($request, $ownerUserId)) {
             return $this->sendResponse(false, __('Only tenant owner can manage staff'), [], 403);
+        }
+
+        $limit = $this->resolveStaffLimit((int) $tenant->id);
+        if ($limit <= 0) {
+            return $this->sendResponse(false, __('Staff management feature is not enabled for your package'), [], 403);
         }
 
         $data = $this->tenantStaffRepository->staffList($request, $ownerUserId);
@@ -69,6 +82,19 @@ class TenantStaffService extends BaseService implements TenantStaffServiceInterf
             return $this->sendResponse(false, $duplicateMessage, [], 422);
         }
 
+        $limit = $this->resolveStaffLimit((int) $tenant->id);
+        if ($limit <= 0) {
+            return $this->sendResponse(false, __('Staff management feature is not enabled for your package'), [], 403);
+        }
+
+        $currentCount = $this->tenantStaffRepository->totalStaffCount($ownerUserId);
+        if ($currentCount >= $limit) {
+            return $this->sendResponse(false, __('Staff limit reached for your current package'), [
+                'staff_limit' => $limit === PHP_INT_MAX ? 'unlimited' : $limit,
+                'staff_used' => $currentCount,
+            ], 422);
+        }
+
         try {
             $data = [
                 'parent_id' => $ownerUserId,
@@ -89,6 +115,9 @@ class TenantStaffService extends BaseService implements TenantStaffServiceInterf
             ];
 
             $item = $this->tenantStaffRepository->createTenantUser($data);
+
+            // Clear staff-specific cache after creation
+            $this->featureResolver->clearStaffFeatureCache((int) $tenant->id, (int) $item->id);
 
             return $this->sendResponse(true, __('Staff created successfully'), $this->tenantStaffRepository->findStaff($ownerUserId, (int) $item->id));
         } catch (Throwable $e) {
@@ -170,6 +199,9 @@ class TenantStaffService extends BaseService implements TenantStaffServiceInterf
 
             $this->tenantStaffRepository->update((int) $item->id, $data);
 
+            // Clear staff-specific cache after update
+            $this->featureResolver->clearStaffFeatureCache((int) $tenant->id, (int) $item->id);
+
             return $this->sendResponse(true, __('Staff updated successfully'), $this->tenantStaffRepository->findStaff($ownerUserId, (int) $item->id));
         } catch (Throwable $e) {
             logStore('TenantStaffService updateStaff', $e->getMessage());
@@ -199,6 +231,9 @@ class TenantStaffService extends BaseService implements TenantStaffServiceInterf
         }
 
         $this->tenantStaffRepository->delete((int) $item->id);
+
+        // Clear staff-specific cache after deletion
+        $this->featureResolver->clearStaffFeatureCache((int) $tenant->id, (int) $item->id);
 
         return $this->sendResponse(true, __('Staff deleted successfully'));
     }
@@ -402,5 +437,93 @@ class TenantStaffService extends BaseService implements TenantStaffServiceInterf
         }
 
         return $candidate;
+    }
+
+    public function getStaffFeatures(Request $request, int $staffId): array
+    {
+        $tenant = $this->resolveTenantFromRequest($request);
+        if (!$tenant) {
+            return $this->sendResponse(false, __('Tenant context is missing'), [], 422);
+        }
+
+        $ownerUserId = (int) $tenant->owner_user_id;
+        $currentUser = $request->user();
+
+        // Allow either: (1) Owner managing staff features, OR (2) Staff accessing their own features
+        $isOwner = $this->isOwnerUser($request, $ownerUserId);
+        $isSelf = $currentUser && (int) $currentUser->id === $staffId && (string) $currentUser->user_type === 'staff';
+
+        if (!$isOwner && !$isSelf) {
+            return $this->sendResponse(false, __('You can only access your own features'), [], 403);
+        }
+
+        $tenantFeatures = $this->featureResolver->getFeatureMap($tenant->id);
+        $staffAssignments = $this->staffFeatureRepository->getStaffFeatures($staffId);
+
+        return $this->sendResponse(true, __('Staff features retrieved successfully'), [
+            'tenant_features' => $tenantFeatures,
+            'staff_assignments' => $staffAssignments
+        ]);
+    }
+
+    public function updateStaffFeatures(Request $request, int $staffId): array
+    {
+        $tenant = $this->resolveTenantFromRequest($request);
+        if (!$tenant) {
+            return $this->sendResponse(false, __('Tenant context is missing'), [], 422);
+        }
+
+        $ownerUserId = (int) $tenant->owner_user_id;
+        if (!$this->isOwnerUser($request, $ownerUserId)) {
+            return $this->sendResponse(false, __('Only tenant owner can manage staff features'), [], 403);
+        }
+
+        $features = $request->input('features', []);
+
+        if (!is_array($features)) {
+            return $this->sendResponse(false, __('Features must be an array'), [], 422);
+        }
+
+        $tenantFeatures = $this->featureResolver->getFeatureMap($tenant->id);
+        $validFeatures = array_keys($tenantFeatures);
+
+        foreach ($features as $feature) {
+            if (!in_array($feature, $validFeatures)) {
+                return $this->sendResponse(false, __('Invalid feature key: :feature', ['feature' => $feature]), [], 422);
+            }
+        }
+
+        try {
+            $updatedAssignments = $this->staffFeatureRepository->updateStaffFeatures($staffId, $features);
+
+            // Clear staff-specific cache
+            $this->featureResolver->clearStaffFeatureCache($tenant->id, $staffId);
+
+            return $this->sendResponse(true, __('Staff features updated successfully'), [
+                'tenant_features' => $tenantFeatures,
+                'staff_assignments' => $updatedAssignments
+            ]);
+        } catch (\Exception $e) {
+            return $this->sendResponse(false, __('Failed to update staff features'), [], 500);
+        }
+    }
+
+    protected function resolveStaffLimit(int $tenantId): int
+    {
+        $limits = [
+            'staff.multi_user_access_10' => 10,
+            'staff.multi_user_access_5' => 5,
+            'staff.multi_user_access_3' => 3,
+            'staff.multi_user_access_2' => 2,
+        ];
+
+        $resolved = 0;
+        foreach ($limits as $featureKey => $limit) {
+            if ($this->featureResolver->canUse($tenantId, $featureKey)) {
+                $resolved = max($resolved, $limit);
+            }
+        }
+
+        return $resolved;
     }
 }

@@ -10,6 +10,138 @@ use App\Http\Services\CustomField\CustomFieldRepository;
 use App\Http\Services\CustomField\CustomFieldRepositoryInterface;
 use App\Http\Services\CustomField\CustomFieldService;
 use App\Http\Services\CustomField\CustomFieldServiceInterface;
+use App\Http\Services\DatabaseBackup\DatabaseBackupRepository;
+use App\Http\Services\DatabaseBackup\DatabaseBackupRepositoryInterface;
+use App\Http\Services\DatabaseBackup\DatabaseBackupService;
+use App\Http\Services\DatabaseBackup\DatabaseBackupServiceInterface;
+use App\Http\Services\TenantHelper\TenantHelperRepository;
+use App\Http\Services\TenantHelper\TenantHelperRepositoryInterface;
+use App\Http\Services\TenantHelper\TenantHelperService;
+use App\Http\Services\TenantHelper\TenantHelperServiceInterface;
+use App\Http\Services\TenantSupervisor\TenantSupervisorRepository;
+use App\Http\Services\TenantSupervisor\TenantSupervisorRepositoryInterface;
+use App\Http\Services\TenantSupervisor\TenantSupervisorService;
+use App\Http\Services\TenantSupervisor\TenantSupervisorServiceInterface;
+use App\Http\Services\TenantCustomer\TenantCustomerRepository;
+use App\Http\Services\TenantCustomer\TenantCustomerRepositoryInterface;
+use App\Http\Services\TenantCustomer\TenantCustomerService;
+use App\Http\Services\TenantCustomer\TenantCustomerServiceInterface;
+use App\Http\Services\TenantOffice\TenantOfficeRepository;
+use App\Http\Services\TenantOffice\TenantOfficeRepositoryInterface;
+use App\Http\Services\TenantOffice\TenantOfficeService;
+use App\Http\Services\TenantOffice\TenantOfficeServiceInterface;
+use App\Http\Services\TenantVendor\TenantVendorRepository;
+use App\Http\Services\TenantVendor\TenantVendorRepositoryInterface;
+use App\Http\Services\TenantVendor\TenantVendorService;
+use App\Http\Services\TenantVendor\TenantVendorServiceInterface;
+use App\Http\Services\TenantRentVehicle\TenantRentVehicleRepository;
+use App\Http\Services\TenantRentVehicle\TenantRentVehicleRepositoryInterface;
+use App\Http\Services\TenantRentVehicle\TenantRentVehicleService;
+use App\Http\Services\TenantRentVehicle\TenantRentVehicleServiceInterface;
+use App\Http\Services\TenantRoutePricing\TenantRoutePricingRepository;
+use App\Http\Services\TenantRoutePricing\TenantRoutePricingRepositoryInterface;
+use App\Http\Services\TenantRoutePricing\TenantRoutePricingService;
+use App\Http\Services\TenantRoutePricing\TenantRoutePricingServiceInterface;
+use App\Http\Services\TenantTrip\TenantTripRepository;
+use App\Http\Services\TenantTrip\TenantTripRepositoryInterface;
+use App\Http\Services\TenantTrip\TenantTripService;
+use App\Http\Services\TenantTrip\TenantTripServiceInterface;
+use App\Http\Services\TenantDailyOfficeExpense\TenantDailyOfficeExpenseRepository;
+use App\Http\Services\TenantDailyOfficeExpense\TenantDailyOfficeExpenseRepositoryInterface;
+use App\Http\Services\TenantDailyOfficeExpense\TenantDailyOfficeExpenseService;
+use App\Http\Services\TenantDailyOfficeExpense\TenantDailyOfficeExpenseServiceInterface;
+use App\Http\Services\TenantSalaryExpense\TenantSalaryExpenseRepository;
+use App\Http\Services\TenantSalaryExpense\TenantSalaryExpenseRepositoryInterface;
+use App\Http\Services\TenantSalaryExpense\TenantSalaryExpenseService;
+use App\Http\Services\TenantSalaryExpense\TenantSalaryExpenseServiceInterface;
+use App\Http\Services\TenantEmployee\TenantEmployeeRepository;
+use App\Http\Services\TenantEmployee\TenantEmployeeRepositoryInterface;
+use App\Http\Services\TenantEmployee\TenantEmployeeService;
+use App\Http\Services\TenantEmployee\TenantEmployeeServiceInterface;
+use App\Http\Services\TenantPayrollAdvanceSalary\TenantPayrollAdvanceSalaryRepository;
+use App\Http\Services\TenantPayrollAdvanceSalary\TenantPayrollAdvanceSalaryRepositoryInterface;
+use App\Http\Services\TenantPayrollAdvanceSalary\TenantPayrollAdvanceSalaryService;
+use App\Http\Services\TenantPayrollAdvanceSalary\TenantPayrollAdvanceSalaryServiceInterface;
+use App\Http\Services\TenantPayrollAttendance\TenantPayrollAttendanceRepository;
+use App\Http\Services\TenantPayrollAttendance\TenantPayrollAttendanceRepositoryInterface;
+use App\Http\Services\TenantPayrollAttendance\TenantPayrollAttendanceService;
+use App\Http\Services\TenantPayrollAttendance\TenantPayrollAttendanceServiceInterface;
+use App\Http\Services\TenantPayrollBonus\TenantPayrollBonusRepository;
+use App\Http\Services\TenantPayrollBonus\TenantPayrollBonusRepositoryInterface;
+use App\Http\Services\TenantPayrollBonus\TenantPayrollBonusService;
+use App\Http\Services\TenantPayrollBonus\TenantPayrollBonusServiceInterface;
+use App\Http\Services\TenantPayrollGenerateSalary\TenantPayrollGenerateSalaryRepository;
+use App\Http\Services\TenantPayrollGenerateSalary\TenantPayrollGenerateSalaryRepositoryInterface;
+use App\Http\Services\TenantPayrollGenerateSalary\TenantPayrollGenerateSalaryService;
+use App\Http\Services\TenantPayrollGenerateSalary\TenantPayrollGenerateSalaryServiceInterface;
+use App\Http\Services\TenantPayrollLoan\TenantPayrollLoanRepository;
+use App\Http\Services\TenantPayrollLoan\TenantPayrollLoanRepositoryInterface;
+use App\Http\Services\TenantPayrollLoan\TenantPayrollLoanService;
+use App\Http\Services\TenantPayrollLoan\TenantPayrollLoanServiceInterface;
+use App\Http\Services\TenantPayrollSalaryPayment\TenantPayrollSalaryPaymentRepository;
+use App\Http\Services\TenantPayrollSalaryPayment\TenantPayrollSalaryPaymentRepositoryInterface;
+use App\Http\Services\TenantPayrollSalaryPayment\TenantPayrollSalaryPaymentService;
+use App\Http\Services\TenantPayrollSalaryPayment\TenantPayrollSalaryPaymentServiceInterface;
+use App\Http\Services\TenantFuelPurchase\TenantFuelPurchaseRepository;
+use App\Http\Services\TenantFuelPurchase\TenantFuelPurchaseRepositoryInterface;
+use App\Http\Services\TenantFuelPurchase\TenantFuelPurchaseService;
+use App\Http\Services\TenantFuelPurchase\TenantFuelPurchaseServiceInterface;
+use App\Http\Services\TenantFuelLedger\TenantFuelLedgerRepository;
+use App\Http\Services\TenantFuelLedger\TenantFuelLedgerRepositoryInterface;
+use App\Http\Services\TenantFuelLedger\TenantFuelLedgerService;
+use App\Http\Services\TenantFuelLedger\TenantFuelLedgerServiceInterface;
+use App\Http\Services\TenantFile\TenantFileRepository;
+use App\Http\Services\TenantFile\TenantFileRepositoryInterface;
+use App\Http\Services\TenantFile\TenantFileService;
+use App\Http\Services\TenantFile\TenantFileServiceInterface;
+use App\Http\Services\TenantSetting\TenantSettingRepository;
+use App\Http\Services\TenantSetting\TenantSettingRepositoryInterface;
+use App\Http\Services\TenantSetting\TenantSettingService;
+use App\Http\Services\TenantSetting\TenantSettingServiceInterface;
+use App\Http\Services\TenantFundTransfer\TenantFundTransferRepository;
+use App\Http\Services\TenantFundTransfer\TenantFundTransferRepositoryInterface;
+use App\Http\Services\TenantFundTransfer\TenantFundTransferService;
+use App\Http\Services\TenantFundTransfer\TenantFundTransferServiceInterface;
+use App\Http\Services\TenantPaymentReceive\TenantPaymentReceiveRepository;
+use App\Http\Services\TenantPaymentReceive\TenantPaymentReceiveRepositoryInterface;
+use App\Http\Services\TenantPaymentReceive\TenantPaymentReceiveService;
+use App\Http\Services\TenantPaymentReceive\TenantPaymentReceiveServiceInterface;
+use App\Http\Services\TenantSupplier\TenantSupplierRepository;
+use App\Http\Services\TenantSupplier\TenantSupplierRepositoryInterface;
+use App\Http\Services\TenantSupplier\TenantSupplierService;
+use App\Http\Services\TenantSupplier\TenantSupplierServiceInterface;
+use App\Http\Services\TenantVendorPayment\TenantVendorPaymentRepository;
+use App\Http\Services\TenantVendorPayment\TenantVendorPaymentRepositoryInterface;
+use App\Http\Services\TenantVendorPayment\TenantVendorPaymentService;
+use App\Http\Services\TenantVendorPayment\TenantVendorPaymentServiceInterface;
+use App\Http\Services\TenantMaintenancePurchase\TenantMaintenancePurchaseRepository;
+use App\Http\Services\TenantMaintenancePurchase\TenantMaintenancePurchaseRepositoryInterface;
+use App\Http\Services\TenantMaintenancePurchase\TenantMaintenancePurchaseService;
+use App\Http\Services\TenantMaintenancePurchase\TenantMaintenancePurchaseServiceInterface;
+use App\Http\Services\TenantOfficialProductPurchase\TenantOfficialProductPurchaseRepository;
+use App\Http\Services\TenantOfficialProductPurchase\TenantOfficialProductPurchaseRepositoryInterface;
+use App\Http\Services\TenantOfficialProductPurchase\TenantOfficialProductPurchaseService;
+use App\Http\Services\TenantOfficialProductPurchase\TenantOfficialProductPurchaseServiceInterface;
+use App\Http\Services\PurchasePayment\PurchasePaymentService;
+use App\Http\Services\PurchasePayment\PurchasePaymentServiceInterface;
+use App\Http\Services\PurchasePayment\PurchasePaymentRepository;
+use App\Http\Services\PurchasePayment\PurchasePaymentRepositoryInterface;
+use App\Http\Services\TenantReport\TenantReportService;
+use App\Http\Services\TenantReport\TenantReportServiceInterface;
+use App\Http\Services\TenantReport\TenantReportRepository;
+use App\Http\Services\TenantReport\TenantReportRepositoryInterface;
+use App\Http\Services\VendorPayment\VendorPaymentService;
+use App\Http\Services\VendorPayment\VendorPaymentServiceInterface;
+use App\Http\Services\VendorPayment\VendorPaymentRepository;
+use App\Http\Services\VendorPayment\VendorPaymentRepositoryInterface;
+use App\Http\Services\DriverPayment\DriverPaymentService;
+use App\Http\Services\DriverPayment\DriverPaymentServiceInterface;
+use App\Http\Services\DriverPayment\DriverPaymentRepository;
+use App\Http\Services\DriverPayment\DriverPaymentRepositoryInterface;
+use App\Http\Services\TenantHelperLedger\HelperLedgerService;
+use App\Http\Services\TenantHelperLedger\HelperLedgerServiceInterface;
+use App\Http\Services\TenantHelperLedger\HelperLedgerRepository;
+use App\Http\Services\TenantHelperLedger\HelperLedgerRepositoryInterface;
 use App\Http\Services\Role\RoleRepository;
 use App\Http\Services\Role\RoleRepositoryInterface;
 use App\Http\Services\Role\RoleService;
@@ -78,6 +210,10 @@ use App\Http\Services\TenantApi\TenantApiRepository;
 use App\Http\Services\TenantApi\TenantApiRepositoryInterface;
 use App\Http\Services\TenantApi\TenantApiService;
 use App\Http\Services\TenantApi\TenantApiServiceInterface;
+use App\Http\Services\TenantArea\TenantAreaRepository;
+use App\Http\Services\TenantArea\TenantAreaRepositoryInterface;
+use App\Http\Services\TenantArea\TenantAreaService;
+use App\Http\Services\TenantArea\TenantAreaServiceInterface;
 use App\Http\Services\Tenant\TenantProvisionService;
 use App\Http\Services\Tenant\TenantProvisionServiceInterface;
 use App\Http\Services\TenantDriver\TenantDriverRepository;
@@ -92,10 +228,32 @@ use App\Http\Services\TenantStaff\TenantStaffRepository;
 use App\Http\Services\TenantStaff\TenantStaffRepositoryInterface;
 use App\Http\Services\TenantStaff\TenantStaffService;
 use App\Http\Services\TenantStaff\TenantStaffServiceInterface;
+use App\Http\Services\TenantStaff\StaffFeatureRepositoryInterface;
+use App\Http\Services\TenantStaff\StaffFeatureRepository;
 use App\Http\Services\PricingPlan\PricingPlanRepository;
 use App\Http\Services\PricingPlan\PricingPlanRepositoryInterface;
 use App\Http\Services\PricingPlan\PricingPlanService;
 use App\Http\Services\PricingPlan\PricingPlanServiceInterface;
+use App\Http\Services\RegistrationSerial\RegistrationSerialRepository;
+use App\Http\Services\RegistrationSerial\RegistrationSerialRepositoryInterface;
+use App\Http\Services\RegistrationSerial\RegistrationSerialService;
+use App\Http\Services\RegistrationSerial\RegistrationSerialServiceInterface;
+use App\Http\Services\RegistrationZone\RegistrationZoneRepository;
+use App\Http\Services\RegistrationZone\RegistrationZoneRepositoryInterface;
+use App\Http\Services\RegistrationZone\RegistrationZoneService;
+use App\Http\Services\RegistrationZone\RegistrationZoneServiceInterface;
+use App\Http\Services\Area\AreaRepository;
+use App\Http\Services\Area\AreaRepositoryInterface;
+use App\Http\Services\Area\AreaService;
+use App\Http\Services\Area\AreaServiceInterface;
+use App\Http\Services\VehicleCategory\VehicleCategoryRepository;
+use App\Http\Services\VehicleCategory\VehicleCategoryRepositoryInterface;
+use App\Http\Services\VehicleCategory\VehicleCategoryService;
+use App\Http\Services\VehicleCategory\VehicleCategoryServiceInterface;
+use App\Http\Services\VehicleCategorySize\VehicleCategorySizeRepository;
+use App\Http\Services\VehicleCategorySize\VehicleCategorySizeRepositoryInterface;
+use App\Http\Services\VehicleCategorySize\VehicleCategorySizeService;
+use App\Http\Services\VehicleCategorySize\VehicleCategorySizeServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class ServiceLayerProvider extends ServiceProvider
@@ -117,6 +275,9 @@ class ServiceLayerProvider extends ServiceProvider
 
         $this->app->bind(CustomFieldRepositoryInterface::class, CustomFieldRepository::class);
         $this->app->bind(CustomFieldServiceInterface::class, CustomFieldService::class);
+
+        $this->app->bind(DatabaseBackupRepositoryInterface::class, DatabaseBackupRepository::class);
+        $this->app->bind(DatabaseBackupServiceInterface::class, DatabaseBackupService::class);
 
         $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
         $this->app->bind(RoleServiceInterface::class, RoleService::class);
@@ -164,6 +325,9 @@ class ServiceLayerProvider extends ServiceProvider
         $this->app->bind(TenantApiRepositoryInterface::class, TenantApiRepository::class);
         $this->app->bind(TenantApiServiceInterface::class, TenantApiService::class);
 
+        $this->app->bind(TenantAreaRepositoryInterface::class, TenantAreaRepository::class);
+        $this->app->bind(TenantAreaServiceInterface::class, TenantAreaService::class);
+
         $this->app->bind(TenantVehicleRepositoryInterface::class, TenantVehicleRepository::class);
         $this->app->bind(TenantVehicleServiceInterface::class, TenantVehicleService::class);
 
@@ -173,8 +337,123 @@ class ServiceLayerProvider extends ServiceProvider
         $this->app->bind(TenantStaffRepositoryInterface::class, TenantStaffRepository::class);
         $this->app->bind(TenantStaffServiceInterface::class, TenantStaffService::class);
 
+        $this->app->bind(StaffFeatureRepositoryInterface::class, StaffFeatureRepository::class);
+
+        $this->app->bind(TenantCustomerRepositoryInterface::class, TenantCustomerRepository::class);
+        $this->app->bind(TenantCustomerServiceInterface::class, TenantCustomerService::class);
+
+        $this->app->bind(TenantHelperRepositoryInterface::class, TenantHelperRepository::class);
+        $this->app->bind(TenantHelperServiceInterface::class, TenantHelperService::class);
+
+        $this->app->bind(TenantSupervisorRepositoryInterface::class, TenantSupervisorRepository::class);
+        $this->app->bind(TenantSupervisorServiceInterface::class, TenantSupervisorService::class);
+
+        $this->app->bind(TenantOfficeRepositoryInterface::class, TenantOfficeRepository::class);
+        $this->app->bind(TenantOfficeServiceInterface::class, TenantOfficeService::class);
+
+        $this->app->bind(TenantVendorRepositoryInterface::class, TenantVendorRepository::class);
+        $this->app->bind(TenantVendorServiceInterface::class, TenantVendorService::class);
+
+        $this->app->bind(TenantRentVehicleRepositoryInterface::class, TenantRentVehicleRepository::class);
+        $this->app->bind(TenantRentVehicleServiceInterface::class, TenantRentVehicleService::class);
+
+        $this->app->bind(TenantRoutePricingRepositoryInterface::class, TenantRoutePricingRepository::class);
+        $this->app->bind(TenantRoutePricingServiceInterface::class, TenantRoutePricingService::class);
+
+        $this->app->bind(TenantTripRepositoryInterface::class, TenantTripRepository::class);
+        $this->app->bind(TenantTripServiceInterface::class, TenantTripService::class);
+
+        $this->app->bind(TenantDailyOfficeExpenseRepositoryInterface::class, TenantDailyOfficeExpenseRepository::class);
+        $this->app->bind(TenantDailyOfficeExpenseServiceInterface::class, TenantDailyOfficeExpenseService::class);
+
+        $this->app->bind(TenantSalaryExpenseRepositoryInterface::class, TenantSalaryExpenseRepository::class);
+        $this->app->bind(TenantSalaryExpenseServiceInterface::class, TenantSalaryExpenseService::class);
+
+        $this->app->bind(TenantEmployeeRepositoryInterface::class, TenantEmployeeRepository::class);
+        $this->app->bind(TenantEmployeeServiceInterface::class, TenantEmployeeService::class);
+
+        $this->app->bind(TenantPayrollAttendanceRepositoryInterface::class, TenantPayrollAttendanceRepository::class);
+        $this->app->bind(TenantPayrollAttendanceServiceInterface::class, TenantPayrollAttendanceService::class);
+
+        $this->app->bind(TenantPayrollBonusRepositoryInterface::class, TenantPayrollBonusRepository::class);
+        $this->app->bind(TenantPayrollBonusServiceInterface::class, TenantPayrollBonusService::class);
+
+        $this->app->bind(TenantPayrollAdvanceSalaryRepositoryInterface::class, TenantPayrollAdvanceSalaryRepository::class);
+        $this->app->bind(TenantPayrollAdvanceSalaryServiceInterface::class, TenantPayrollAdvanceSalaryService::class);
+
+        $this->app->bind(TenantPayrollLoanRepositoryInterface::class, TenantPayrollLoanRepository::class);
+        $this->app->bind(TenantPayrollLoanServiceInterface::class, TenantPayrollLoanService::class);
+
+        $this->app->bind(TenantPayrollGenerateSalaryRepositoryInterface::class, TenantPayrollGenerateSalaryRepository::class);
+        $this->app->bind(TenantPayrollGenerateSalaryServiceInterface::class, TenantPayrollGenerateSalaryService::class);
+
+        $this->app->bind(TenantPayrollSalaryPaymentRepositoryInterface::class, TenantPayrollSalaryPaymentRepository::class);
+        $this->app->bind(TenantPayrollSalaryPaymentServiceInterface::class, TenantPayrollSalaryPaymentService::class);
+
+        $this->app->bind(TenantFuelPurchaseRepositoryInterface::class, TenantFuelPurchaseRepository::class);
+        $this->app->bind(TenantFuelPurchaseServiceInterface::class, TenantFuelPurchaseService::class);
+
+        $this->app->bind(TenantFuelLedgerRepositoryInterface::class, TenantFuelLedgerRepository::class);
+        $this->app->bind(TenantFuelLedgerServiceInterface::class, TenantFuelLedgerService::class);
+
+        $this->app->bind(TenantFileRepositoryInterface::class, TenantFileRepository::class);
+        $this->app->bind(TenantFileServiceInterface::class, TenantFileService::class);
+
+        $this->app->bind(TenantSettingRepositoryInterface::class, TenantSettingRepository::class);
+        $this->app->bind(TenantSettingServiceInterface::class, TenantSettingService::class);
+
+        $this->app->bind(TenantFundTransferRepositoryInterface::class, TenantFundTransferRepository::class);
+        $this->app->bind(TenantFundTransferServiceInterface::class, TenantFundTransferService::class);
+
+        $this->app->bind(TenantPaymentReceiveRepositoryInterface::class, TenantPaymentReceiveRepository::class);
+        $this->app->bind(TenantPaymentReceiveServiceInterface::class, TenantPaymentReceiveService::class);
+
+        $this->app->bind(TenantVendorPaymentRepositoryInterface::class, TenantVendorPaymentRepository::class);
+        $this->app->bind(TenantVendorPaymentServiceInterface::class, TenantVendorPaymentService::class);
+
+        $this->app->bind(TenantSupplierRepositoryInterface::class, TenantSupplierRepository::class);
+        $this->app->bind(TenantSupplierServiceInterface::class, TenantSupplierService::class);
+
+        $this->app->bind(TenantMaintenancePurchaseRepositoryInterface::class, TenantMaintenancePurchaseRepository::class);
+        $this->app->bind(TenantMaintenancePurchaseServiceInterface::class, TenantMaintenancePurchaseService::class);
+
+        $this->app->bind(TenantOfficialProductPurchaseRepositoryInterface::class, TenantOfficialProductPurchaseRepository::class);
+        $this->app->bind(TenantOfficialProductPurchaseServiceInterface::class, TenantOfficialProductPurchaseService::class);
+
+        $this->app->bind(PurchasePaymentServiceInterface::class, PurchasePaymentService::class);
+
+        $this->app->bind(PurchasePaymentRepositoryInterface::class, PurchasePaymentRepository::class);
+
+        $this->app->bind(TenantReportServiceInterface::class, TenantReportService::class);
+
+        $this->app->bind(TenantReportRepositoryInterface::class, TenantReportRepository::class);
+
+        $this->app->bind(VendorPaymentRepositoryInterface::class, VendorPaymentRepository::class);
+        $this->app->bind(VendorPaymentServiceInterface::class, VendorPaymentService::class);
+
+        $this->app->bind(DriverPaymentRepositoryInterface::class, DriverPaymentRepository::class);
+        $this->app->bind(DriverPaymentServiceInterface::class, DriverPaymentService::class);
+
+        $this->app->bind(HelperLedgerRepositoryInterface::class, HelperLedgerRepository::class);
+        $this->app->bind(HelperLedgerServiceInterface::class, HelperLedgerService::class);
+
         $this->app->bind(PricingPlanRepositoryInterface::class, PricingPlanRepository::class);
         $this->app->bind(PricingPlanServiceInterface::class, PricingPlanService::class);
+
+        $this->app->bind(VehicleCategoryRepositoryInterface::class, VehicleCategoryRepository::class);
+        $this->app->bind(VehicleCategoryServiceInterface::class, VehicleCategoryService::class);
+
+        $this->app->bind(VehicleCategorySizeRepositoryInterface::class, VehicleCategorySizeRepository::class);
+        $this->app->bind(VehicleCategorySizeServiceInterface::class, VehicleCategorySizeService::class);
+
+        $this->app->bind(RegistrationSerialRepositoryInterface::class, RegistrationSerialRepository::class);
+        $this->app->bind(RegistrationSerialServiceInterface::class, RegistrationSerialService::class);
+
+        $this->app->bind(RegistrationZoneRepositoryInterface::class, RegistrationZoneRepository::class);
+        $this->app->bind(RegistrationZoneServiceInterface::class, RegistrationZoneService::class);
+
+        $this->app->bind(AreaRepositoryInterface::class, AreaRepository::class);
+        $this->app->bind(AreaServiceInterface::class, AreaService::class);
     }
 
     /**

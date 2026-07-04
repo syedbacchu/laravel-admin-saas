@@ -17,8 +17,16 @@ use App\Http\Services\Tenant\TenantFeatureResolverService;
 use App\Models\Subscription;
 use App\Models\SubscriptionPayment;
 use App\Models\Tenant;
+use App\Models\TenantAllEmployee;
+use App\Models\TenantCustomer;
 use App\Models\TenantDriver;
+use App\Models\TenantOffice;
+use App\Models\TenantSupplier;
+use App\Models\TenantTrip;
+use App\Models\TenantVehicle;
+use App\Models\TenantVendor;
 use App\Models\User;
+use App\Support\DataListManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -53,8 +61,9 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
         $throttleKey = $request->throttleKey($companyUsername);
 
         $user = $this->tenantApiRepository->findTenantUserByLogin($tenant, (string) $request->login);
+
         if (!$user || !Hash::check((string) $request->password, (string) $user->password)) {
-            RateLimiter::hit($throttleKey, 20 * 60);
+            RateLimiter::hit($throttleKey, 10 * 60);
             return $this->sendResponse(false, __('Invalid credentials'), [], 422);
         }
 
@@ -81,7 +90,12 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
 
         $token = $user->createToken('tenant_' . $tenant->company_username . '_' . $user->id)->accessToken;
         $activeSubscription = $this->tenantFeatureResolverService->getActiveSubscription((int) $tenant->id);
-        $featureMap = $this->tenantFeatureResolverService->getFeatureMap((int) $tenant->id);
+
+        if ($userType === 'staff') {
+            $featureMap = $this->tenantFeatureResolverService->getFeatureMapForStaff((int) $tenant->id, (int) $user->id);
+        } else {
+            $featureMap = $this->tenantFeatureResolverService->getFeatureMap((int) $tenant->id);
+        }
 
         return $this->sendResponse(true, __('Login successful'), [
             'access_token' => $token,
@@ -134,8 +148,8 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
         $otpRequest = new Request([
             'user_id' => $user->id,
             'type' => $type,
-            'validity_type' => 'minute',
-            'validity' => 20,
+            'validity_type' => 'day',
+            'validity' => 1,
         ]);
 
         $createOtp = UserVerifyCodeService::createUserOtpCode($otpRequest, (bool) $request->resend);
@@ -266,7 +280,12 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
             ->latest('id')
             ->first();
 
-        $featureMap = $this->tenantFeatureResolverService->getFeatureMap((int) $tenant->id);
+        $userType = $this->resolveTenantUserType($user, $tenant);
+        if ($userType === 'staff') {
+            $featureMap = $this->tenantFeatureResolverService->getFeatureMapForStaff((int) $tenant->id, (int) $user->id);
+        } else {
+            $featureMap = $this->tenantFeatureResolverService->getFeatureMap((int) $tenant->id);
+        }
 
         $paymentSummary = null;
         if ($subscription) {
@@ -307,7 +326,13 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
         }
 
         $activeSubscription = $this->tenantFeatureResolverService->getActiveSubscription((int) $tenant->id);
-        $featureMap = $this->tenantFeatureResolverService->getFeatureMap((int) $tenant->id);
+
+        $userType = $this->resolveTenantUserType($user, $tenant);
+        if ($userType === 'staff') {
+            $featureMap = $this->tenantFeatureResolverService->getFeatureMapForStaff((int) $tenant->id, (int) $user->id);
+        } else {
+            $featureMap = $this->tenantFeatureResolverService->getFeatureMap((int) $tenant->id);
+        }
 
         $totalPayments = (int) SubscriptionPayment::query()
             ->where('tenant_id', $tenant->id)
@@ -359,6 +384,368 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
         ]);
     }
 
+    public function dashboardSummary(Request $request): array
+    {
+        $user = $request->user();
+        $tenant = $this->getRequestTenant($request, $user);
+
+        if (!$tenant) {
+            return $this->sendResponse(false, __('Tenant not found for user'), [], 404);
+        }
+
+        // Get financial summary using the report service
+        $reportService = app(\App\Http\Services\TenantReport\TenantReportServiceInterface::class);
+
+        // Create a request for current year's data
+        $currentYear = now()->year;
+        $reportRequest = new Request(['year' => $currentYear]);
+        $reportRequest->attributes->set('tenant', $tenant);
+
+        $financialData = $reportService->getYearlyProfitLoss($reportRequest);
+
+        // Get entity counts
+        $entityCounts = $this->getEntityCounts($tenant);
+
+        return $this->sendResponse(true, __('Dashboard summary'), [
+            'tenant' => [
+                'id' => $tenant->id,
+                'company_name' => $tenant->company_name,
+                'company_username' => $tenant->company_username,
+            ],
+            'entity_counts' => $entityCounts,
+            'financial_summary' => $financialData['data']['total_summary_data'] ?? [],
+            'vehicle_alerts' => $this->getVehicleExpiryAlerts(),
+            'maintenance_alerts' => $this->getMaintenanceServiceAlerts(),
+        ]);
+    }
+
+    /**
+     * Get entity counts for the dashboard
+     */
+    protected function getEntityCounts(Tenant $tenant): array
+    {
+        // Get counts of all major entities
+        // Note: No tenant_id filtering needed as each tenant has their own database
+        // The tenant connection is set dynamically by the ResolveTenantContext middleware
+        $vehiclesCount = TenantVehicle::count();
+        $customersCount = TenantCustomer::count();
+        $driversCount = TenantDriver::count();
+        $suppliersCount = TenantSupplier::count();
+        $employeesCount = TenantAllEmployee::count();
+        $vendorsCount = TenantVendor::count();
+        $helpersCount = TenantAllEmployee::where('employee_type', 'helper')->count();
+        $supervisorsCount = TenantAllEmployee::where('employee_type', 'supervisor')->count();
+        $officesCount = TenantOffice::count();
+        $tripsCount = TenantTrip::count();
+
+        return [
+            'vehicles' => [
+                'total' => $vehiclesCount,
+                'active' => TenantVehicle::where('status', 1)->count(),
+            ],
+            'customers' => [
+                'total' => $customersCount,
+                'active' => TenantCustomer::where('status', 1)->count(),
+            ],
+            'drivers' => [
+                'total' => $driversCount,
+                'active' => TenantDriver::where('status', 1)->count(),
+            ],
+            'suppliers' => [
+                'total' => $suppliersCount,
+                'active' => TenantSupplier::where('status', 1)->count(),
+            ],
+            'employees' => [
+                'total' => $employeesCount,
+                'active' => TenantAllEmployee::where('status', 1)->count(),
+            ],
+            'vendors' => [
+                'total' => $vendorsCount,
+                'active' => TenantVendor::where('status', 1)->count(),
+            ],
+            'helpers' => [
+                'total' => $helpersCount,
+                'active' => TenantAllEmployee::where('employee_type', 'helper')
+                    ->where('status', 1)
+                    ->count(),
+            ],
+            'supervisors' => [
+                'total' => $supervisorsCount,
+                'active' => TenantAllEmployee::where('employee_type', 'supervisor')
+                    ->where('status', 1)
+                    ->count(),
+            ],
+            'offices' => [
+                'total' => $officesCount,
+                'active' => TenantOffice::where('status', 1)->count(),
+            ],
+            'trips' => [
+                'total' => $tripsCount,
+                'today' => TenantTrip::whereDate('date', today())->count(),
+                'this_month' => TenantTrip::whereYear('date', now()->year)
+                    ->whereMonth('date', now()->month)
+                    ->count(),
+            ],
+        ];
+    }
+
+    /**
+     * Get vehicles with expiry dates coming up soon or already expired
+     */
+    protected function getVehicleExpiryAlerts(): array
+    {
+        // Get alert days from tenant settings, default to 30 days
+        $alertDays = $this->getVehicleAlertDays();
+
+        $alertDate = now()->addDays($alertDays)->endOfDay();
+        $today = now()->startOfDay();
+
+        // Get vehicles where any expiry date is within the alert period or already expired
+        $vehicles = TenantVehicle::where('status', 1)
+            ->where(function ($query) use ($today, $alertDate) {
+                // Registration expiry
+                $query->where(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('registration_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('registration_expired_date', [$today, $alertDate])
+                                ->orWhere('registration_expired_date', '<', $today);
+                        });
+                })
+                // Tax expiry
+                ->orWhere(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('tax_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('tax_expired_date', [$today, $alertDate])
+                                ->orWhere('tax_expired_date', '<', $today);
+                        });
+                })
+                // Road permit expiry
+                ->orWhere(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('road_permit_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('road_permit_expired_date', [$today, $alertDate])
+                                ->orWhere('road_permit_expired_date', '<', $today);
+                        });
+                })
+                // Fitness expiry
+                ->orWhere(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('fitness_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('fitness_expired_date', [$today, $alertDate])
+                                ->orWhere('fitness_expired_date', '<', $today);
+                        });
+                })
+                // Insurance expiry
+                ->orWhere(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('insurance_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('insurance_expired_date', [$today, $alertDate])
+                                ->orWhere('insurance_expired_date', '<', $today);
+                        });
+                });
+            })
+            ->get();
+
+        $vehicleAlerts = [];
+        foreach ($vehicles as $vehicle) {
+            $alerts = $this->getVehicleExpiryDetails($vehicle, $alertDays);
+            if (!empty($alerts)) {
+                $vehicleAlerts[] = [
+                    'vehicle_id' => $vehicle->id,
+                    'vehicle_name' => $vehicle->vehicle_name,
+                    'registration_no' => $vehicle->registration_no ?? $vehicle->registration_number,
+                    'vehicle_type' => $vehicle->vehicle_type,
+                    'brand' => $vehicle->brand,
+                    'image' => $this->formatImageUrl($vehicle->image),
+                    'model' => $vehicle->model,
+                    'alerts' => $alerts,
+                ];
+            }
+        }
+
+        // Count expired alerts
+        $expiredCount = 0;
+        foreach ($vehicleAlerts as $vehicleAlert) {
+            foreach ($vehicleAlert['alerts'] as $alert) {
+                if ($alert['is_expired']) {
+                    $expiredCount++;
+                    break;
+                }
+            }
+        }
+
+        return [
+            'alert_days' => $alertDays,
+            'total_alerts' => count($vehicleAlerts),
+            'expired_count' => $expiredCount,
+            'vehicles' => $vehicleAlerts,
+        ];
+    }
+
+    /**
+     * Get expiry details for a specific vehicle
+     */
+    protected function getVehicleExpiryDetails(TenantVehicle $vehicle, int $alertDays): array
+    {
+        $alerts = [];
+        $today = now()->startOfDay();
+        $alertDate = now()->addDays($alertDays)->endOfDay();
+
+        $expiryFields = [
+            'registration_expired_date' => 'Registration',
+            'tax_expired_date' => 'Tax',
+            'road_permit_expired_date' => 'Road Permit',
+            'fitness_expired_date' => 'Fitness',
+            'insurance_expired_date' => 'Insurance',
+        ];
+
+        foreach ($expiryFields as $field => $label) {
+            if ($vehicle->$field) {
+                $expiryDate = \Carbon\Carbon::parse($vehicle->$field);
+
+                // Check if date is within alert period OR already expired
+                if ($expiryDate->between($today, $alertDate) || $expiryDate->isPast()) {
+                    $daysUntilExpiry = $today->diffInDays($expiryDate, false);
+                    $isExpired = $expiryDate->isPast();
+
+                    $alerts[] = [
+                        'type' => $label,
+                        'expiry_date' => $vehicle->$field,
+                        'days_until_expiry' => $daysUntilExpiry,
+                        'days_overdue' => $isExpired ? abs($daysUntilExpiry) : 0,
+                        'is_expired' => $isExpired,
+                        'status' => $isExpired ? 'expired' : ($daysUntilExpiry <= 7 ? 'critical' : 'warning'),
+                    ];
+                }
+            }
+        }
+
+        // Sort alerts by status priority (expired first, then critical, then warning)
+        usort($alerts, function ($a, $b) {
+            $statusPriority = ['expired' => 0, 'critical' => 1, 'warning' => 2];
+            $statusA = $statusPriority[$a['status']] ?? 3;
+            $statusB = $statusPriority[$b['status']] ?? 3;
+
+            return $statusA - $statusB;
+        });
+
+        return $alerts;
+    }
+
+    /**
+     * Get vehicle alert days from tenant settings
+     */
+    protected function getVehicleAlertDays(): int
+    {
+        try {
+            $setting = \App\Models\TenantSetting::where('slug', 'vehicle_expiry_alert_days')
+                ->first();
+
+            if ($setting && is_numeric($setting->value)) {
+                return (int) $setting->value;
+            }
+        } catch (\Exception $e) {
+            // Fall back to default if setting retrieval fails
+        }
+
+        return 30; // Default to 30 days
+    }
+
+    /**
+     * Get maintenance services that are due soon or already expired
+     */
+    protected function getMaintenanceServiceAlerts(): array
+    {
+        // Get alert days from tenant settings, default to 30 days
+        $alertDays = $this->getMaintenanceAlertDays();
+
+        $alertDate = now()->addDays($alertDays)->endOfDay();
+        $today = now()->startOfDay();
+
+        // Get maintenance purchases where next service date is within the alert period or already expired
+        $maintenancePurchases = \App\Models\TenantMaintenancePurchase::where('status', 1)
+            ->whereNotNull('next_service_date')
+            ->where(function ($query) use ($today, $alertDate) {
+                // Either within the alert period (upcoming) OR already expired
+                $query->whereBetween('next_service_date', [$today, $alertDate])
+                    ->orWhere('next_service_date', '<', $today);
+            })
+            ->with(['vehicle', 'supplier', 'office'])
+            ->get();
+
+        $maintenanceAlerts = [];
+        foreach ($maintenancePurchases as $maintenance) {
+            $nextServiceDate = \Carbon\Carbon::parse($maintenance->next_service_date);
+            $daysUntilService = $today->diffInDays($nextServiceDate, false);
+            $isOverdue = $nextServiceDate->isPast();
+
+            $maintenanceAlerts[] = [
+                'maintenance_id' => $maintenance->id,
+                'vehicle' => $maintenance->vehicle ? [
+                    'id' => $maintenance->vehicle->id,
+                    'name' => $maintenance->vehicle->vehicle_name,
+                    'image' => $this->formatImageUrl($maintenance->vehicle->image),
+                    'registration_no' => $maintenance->vehicle->registration_no ?? $maintenance->vehicle->registration_number,
+                ] : null,
+                'supplier' => $maintenance->supplier ? [
+                    'id' => $maintenance->supplier->id,
+                    'name' => $maintenance->supplier->name,
+                ] : null,
+                'category' => $maintenance->category,
+                'service_date' => $maintenance->service_date,
+                'next_service_date' => $maintenance->next_service_date,
+                'days_until_service' => $daysUntilService,
+                'is_overdue' => $isOverdue,
+                'days_overdue' => $isOverdue ? abs($daysUntilService) : 0,
+                'status' => $isOverdue ? 'overdue' : ($daysUntilService <= 7 ? 'critical' : 'upcoming'),
+                'items' => $maintenance->items,
+                'service_charge' => (float) ($maintenance->service_charge ?? 0),
+            ];
+        }
+
+        // Sort by status priority (overdue first, then critical, then upcoming)
+        usort($maintenanceAlerts, function ($a, $b) {
+            $statusPriority = ['overdue' => 0, 'critical' => 1, 'upcoming' => 2];
+            $statusA = $statusPriority[$a['status']] ?? 3;
+            $statusB = $statusPriority[$b['status']] ?? 3;
+
+            if ($statusA !== $statusB) {
+                return $statusA - $statusB;
+            }
+
+            // If same status, sort by days (most urgent first)
+            return $a['days_until_service'] - $b['days_until_service'];
+        });
+
+        return [
+            'alert_days' => $alertDays,
+            'total_alerts' => count($maintenanceAlerts),
+            'overdue_count' => count(array_filter($maintenanceAlerts, fn($alert) => $alert['is_overdue'])),
+            'critical_count' => count(array_filter($maintenanceAlerts, fn($alert) => $alert['status'] === 'critical')),
+            'upcoming_count' => count(array_filter($maintenanceAlerts, fn($alert) => $alert['status'] === 'upcoming')),
+            'services' => $maintenanceAlerts,
+        ];
+    }
+
+    /**
+     * Get maintenance alert days from tenant settings
+     */
+    protected function getMaintenanceAlertDays(): int
+    {
+        try {
+            $setting = \App\Models\TenantSetting::where('slug', 'maintenance_service_alert_days')
+                ->first();
+
+            if ($setting && is_numeric($setting->value)) {
+                return (int) $setting->value;
+            }
+        } catch (\Exception $e) {
+            // Fall back to default if setting retrieval fails
+        }
+
+        return 30; // Default to 30 days
+    }
+
     protected function getRequestTenant(Request $request, ?User $user): ?Tenant
     {
         $tenant = $request->attributes->get('tenant');
@@ -403,7 +790,6 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
         }
 
         $types = array_values(array_unique($types));
-
         foreach ($types as $type) {
             $verified = UserVerifyCodeService::otpCodeVerification($user->id, $otp, $type);
             if (($verified['success'] ?? false) === true) {
@@ -421,5 +807,251 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
         }
 
         return (int) $user->id === (int) $tenant->owner_user_id ? 'owner' : 'staff';
+    }
+
+    public function vehicleAlertsList(Request $request): array
+    {
+        $user = $request->user();
+        $tenant = $this->getRequestTenant($request, $user);
+
+        if (!$tenant) {
+            return $this->sendResponse(false, __('Tenant not found for user'), [], 404);
+        }
+
+        // Get alert days from tenant settings
+        $alertDays = $this->getVehicleAlertDays();
+        $alertDate = now()->addDays($alertDays)->endOfDay();
+        $today = now()->startOfDay();
+
+        // Build query for vehicles with expiry alerts
+        $query = TenantVehicle::where('status', 1)
+            ->where(function ($q) use ($today, $alertDate) {
+                // Registration expiry
+                $q->where(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('registration_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('registration_expired_date', [$today, $alertDate])
+                                ->orWhere('registration_expired_date', '<', $today);
+                        });
+                })
+                // Tax expiry
+                ->orWhere(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('tax_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('tax_expired_date', [$today, $alertDate])
+                                ->orWhere('tax_expired_date', '<', $today);
+                        });
+                })
+                // Road permit expiry
+                ->orWhere(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('road_permit_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('road_permit_expired_date', [$today, $alertDate])
+                                ->orWhere('road_permit_expired_date', '<', $today);
+                        });
+                })
+                // Fitness expiry
+                ->orWhere(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('fitness_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('fitness_expired_date', [$today, $alertDate])
+                                ->orWhere('fitness_expired_date', '<', $today);
+                        });
+                })
+                // Insurance expiry
+                ->orWhere(function ($subQuery) use ($today, $alertDate) {
+                    $subQuery->whereNotNull('insurance_expired_date')
+                        ->where(function ($dateQuery) use ($today, $alertDate) {
+                            $dateQuery->whereBetween('insurance_expired_date', [$today, $alertDate])
+                                ->orWhere('insurance_expired_date', '<', $today);
+                        });
+                });
+            });
+
+        $result = DataListManager::list(
+            request: $request,
+            query: $query,
+            searchable: [
+                'vehicle_name',
+                'registration_no',
+                'registration_number',
+                'brand',
+                'model',
+            ],
+            filters: [
+                'vehicle_type' => ['column' => 'vehicle_type'],
+                'status' => ['column' => 'status'],
+            ],
+            select: [
+                'id',
+                'vehicle_name',
+                'registration_no',
+                'registration_number',
+                'vehicle_type',
+                'brand',
+                'model',
+                'registration_expired_date',
+                'tax_expired_date',
+                'road_permit_expired_date',
+                'fitness_expired_date',
+                'insurance_expired_date',
+                'status',
+                'image'
+            ],
+        );
+
+        // Process alerts for each vehicle
+        $vehiclesWithAlerts = [];
+        foreach ($result['data'] as $vehicle) {
+            $alerts = $this->getVehicleExpiryDetails($vehicle, $alertDays);
+            if (!empty($alerts)) {
+                $vehiclesWithAlerts[] = [
+                    'vehicle_id' => $vehicle->id,
+                    'vehicle_name' => $vehicle->vehicle_name,
+                    'registration_no' => $vehicle->registration_no ?? $vehicle->registration_number,
+                    'vehicle_type' => $vehicle->vehicle_type,
+                    'brand' => $vehicle->brand,
+                    'model' => $vehicle->model,
+                    'image' => $vehicle->image,
+                    'alerts' => $alerts,
+                    'has_expired' => collect($alerts)->contains('is_expired', true),
+                ];
+            }
+        }
+
+        $result['data'] = $vehiclesWithAlerts;
+        $result['alert_days'] = $alertDays;
+        $result['total_alerts'] = count($vehiclesWithAlerts);
+        $result['expired_count'] = collect($vehiclesWithAlerts)->where('has_expired', true)->count();
+
+        return $this->sendResponse(true, __('Vehicle alerts retrieved successfully'), $result);
+    }
+
+    public function maintenanceAlertsList(Request $request): array
+    {
+        $user = $request->user();
+        $tenant = $this->getRequestTenant($request, $user);
+
+        if (!$tenant) {
+            return $this->sendResponse(false, __('Tenant not found for user'), [], 404);
+        }
+
+        // Get alert days from tenant settings
+        $alertDays = $this->getMaintenanceAlertDays();
+        $alertDate = now()->addDays($alertDays)->endOfDay();
+        $today = now()->startOfDay();
+
+        // Build query for maintenance alerts
+        $query = \App\Models\TenantMaintenancePurchase::where('status', 1)
+            ->whereNotNull('next_service_date')
+            ->where(function ($q) use ($today, $alertDate) {
+                // Either within the alert period (upcoming) OR already expired
+                $q->whereBetween('next_service_date', [$today, $alertDate])
+                    ->orWhere('next_service_date', '<', $today);
+            })
+            ->with(['vehicle:id,vehicle_name,registration_no,registration_number,image', 'supplier:id,name']);
+
+        $result = DataListManager::list(
+            request: $request,
+            query: $query,
+            searchable: [
+                'category',
+            ],
+            filters: [
+                'category' => ['column' => 'category'],
+                'vehicle_id' => ['column' => 'vehicle_id'],
+                'supplier_id' => ['column' => 'supplier_id'],
+            ],
+            select: [
+                'id',
+                'vehicle_id',
+                'supplier_id',
+                'category',
+                'service_date',
+                'next_service_date',
+                'items',
+                'service_charge',
+                'total_purchase_amount',
+                'status',
+            ],
+        );
+
+        // Process maintenance alerts
+        $maintenanceAlerts = [];
+        foreach ($result['data'] as $maintenance) {
+            $nextServiceDate = \Carbon\Carbon::parse($maintenance->next_service_date);
+            $daysUntilService = $today->diffInDays($nextServiceDate, false);
+            $isOverdue = $nextServiceDate->isPast();
+
+            $maintenanceAlerts[] = [
+                'maintenance_id' => $maintenance->id,
+                'vehicle' => $maintenance->vehicle ? [
+                    'id' => $maintenance->vehicle->id,
+                    'name' => $maintenance->vehicle->vehicle_name,
+                    'image' => $maintenance->vehicle->image,
+                    'registration_no' => $maintenance->vehicle->registration_no ?? $maintenance->vehicle->registration_number,
+                ] : null,
+                'supplier' => $maintenance->supplier ? [
+                    'id' => $maintenance->supplier->id,
+                    'name' => $maintenance->supplier->name,
+                ] : null,
+                'category' => $maintenance->category,
+                'service_date' => $maintenance->service_date,
+                'next_service_date' => $maintenance->next_service_date,
+                'days_until_service' => $daysUntilService,
+                'is_overdue' => $isOverdue,
+                'days_overdue' => $isOverdue ? abs($daysUntilService) : 0,
+                'status' => $isOverdue ? 'overdue' : ($daysUntilService <= 7 ? 'critical' : 'upcoming'),
+                'items' => $maintenance->items,
+                'service_charge' => (float) ($maintenance->service_charge ?? 0),
+                'total_purchase_amount' => (float) $maintenance->total_purchase_amount,
+            ];
+        }
+
+        // Sort by status priority (overdue first, then critical, then upcoming)
+        usort($maintenanceAlerts, function ($a, $b) {
+            $statusPriority = ['overdue' => 0, 'critical' => 1, 'upcoming' => 2];
+            $statusA = $statusPriority[$a['status']] ?? 3;
+            $statusB = $statusPriority[$b['status']] ?? 3;
+
+            if ($statusA !== $statusB) {
+                return $statusA - $statusB;
+            }
+
+            // If same status, sort by days (most urgent first)
+            return $a['days_until_service'] - $b['days_until_service'];
+        });
+
+        $result['data'] = $maintenanceAlerts;
+        $result['alert_days'] = $alertDays;
+        $result['total_alerts'] = count($maintenanceAlerts);
+        $result['overdue_count'] = count(array_filter($maintenanceAlerts, fn($alert) => $alert['is_overdue']));
+        $result['critical_count'] = count(array_filter($maintenanceAlerts, fn($alert) => $alert['status'] === 'critical'));
+        $result['upcoming_count'] = count(array_filter($maintenanceAlerts, fn($alert) => $alert['status'] === 'upcoming'));
+
+        return $this->sendResponse(true, __('Maintenance alerts retrieved successfully'), $result);
+    }
+
+    /**
+     * Format image URL to ensure it includes the full URL path
+     */
+    protected function formatImageUrl($image): ?string
+    {
+        if (!$image) {
+            return null;
+        }
+
+        // If image already starts with http:// or https://, return as is
+        if (preg_match('/^https?:\/\//', $image)) {
+            return $image;
+        }
+
+        // If image starts with /, assume it's a relative path and append to app URL
+        if (strpos($image, '/') === 0) {
+            return rtrim(config('app.url'), '/') . $image;
+        }
+
+        // Otherwise, assume it's a path relative to public/uploads
+        return rtrim(config('app.url'), '/') . '/uploads/' . ltrim($image, '/');
     }
 }
