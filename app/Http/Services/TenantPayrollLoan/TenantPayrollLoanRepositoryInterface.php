@@ -3,7 +3,7 @@
 namespace App\Http\Services\TenantPayrollLoan;
 
 use App\Http\Repositories\BaseRepositoryInterface;
-use App\Models\TenantPayrollLoan;
+use App\Models\Tenant\TenantPayrollLoan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 

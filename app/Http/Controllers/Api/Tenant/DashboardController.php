@@ -28,17 +28,5 @@ class DashboardController extends Controller
         $response = $this->service->dashboardSummary($request);
         return ResponseService::send($response);
     }
-
-    public function vehicleAlerts(Request $request): JsonResponse
-    {
-        $response = $this->service->vehicleAlertsList($request);
-        return ResponseService::send($response);
-    }
-
-    public function maintenanceAlerts(Request $request): JsonResponse
-    {
-        $response = $this->service->maintenanceAlertsList($request);
-        return ResponseService::send($response);
-    }
 }
 

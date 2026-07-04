@@ -5,12 +5,11 @@ namespace App\Http\Services\TenantSalaryExpense;
 use App\Http\Requests\TenantApi\TenantSalaryExpenseCreateRequest;
 use App\Http\Services\BaseService;
 use App\Models\Tenant;
-use App\Models\TenantAllEmployee;
-use App\Models\TenantOffice;
-use App\Models\TenantPayrollLoanPayment;
-use App\Models\TenantPayrollSalaryPayment;
-use App\Models\TenantPayrollSalarySheet;
-use App\Models\TenantSalaryExpense;
+use App\Models\Tenant\TenantAllEmployee;
+use App\Models\Tenant\TenantOffice;
+use App\Models\Tenant\TenantPayrollSalaryPayment;
+use App\Models\Tenant\TenantPayrollSalarySheet;
+use App\Models\Tenant\TenantSalaryExpense;
 use App\Models\TenantTrip;
 use App\Traits\BlocksLockedPayrollMonths;
 use Illuminate\Http\Request;
@@ -125,7 +124,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
 
                 if ($request->edit_id) {
                     $previousItem = clone $existingItem;
-                    $hasLoanPayments = \App\Models\TenantPayrollLoanPayment::query()
+                    $hasLoanPayments = Tenant\TenantPayrollLoanPayment::query()
                         ->where('salary_expense_id', $existingItem->id)
                         ->exists();
 
@@ -204,7 +203,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
         if (!$item) {
             return $this->sendResponse(false, __('Salary expense not found'), [], 404);
         }
-        
+
         // if ($lockResponse = $this->ensurePayrollMonthsAreEditable([(string) $item->salary_month], __('Salary expense records'))) {
         //     return $lockResponse;
         // }
@@ -556,7 +555,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
 
     protected function resolveAdvanceDeductionAmount(int $employeeId, string $salaryMonth): float
     {
-        $advanceDeduction = (float) \App\Models\TenantPayrollAdvanceSalary::query()
+        $advanceDeduction = (float) Tenant\TenantPayrollAdvanceSalary::query()
             ->where('employee_id', $employeeId)
             ->where('salary_month', $salaryMonth)
             ->whereIn('status', ['paid'])
@@ -587,7 +586,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
             }
 
             // Get all active loans for this employee
-            $activeLoans = \App\Models\TenantPayrollLoan::query()
+            $activeLoans = Tenant\TenantPayrollLoan::query()
                 ->where('employee_id', $employeeId)
                 ->where('status', 'pending')
                 ->where('remaining_balance', '>', 0)
@@ -601,7 +600,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
             $currentUserId = $user ? $user->id : null;
             logStore('processLoanDeductions current user id', $currentUserId);
             foreach ($activeLoans as $loan) {
-                $existingMonthlyDeduction = \App\Models\TenantPayrollLoanPayment::query()
+                $existingMonthlyDeduction = Tenant\TenantPayrollLoanPayment::query()
                     ->where('loan_id', $loan->id)
                     ->where('salary_month', $salaryMonth)
                     ->where('payment_method', 'salary_deduction')
@@ -624,7 +623,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
                 }
 
                 // Create loan payment record
-                \App\Models\TenantPayrollLoanPayment::create([
+                Tenant\TenantPayrollLoanPayment::create([
                     'added_by' => $currentUserId,
                     'updated_by' => $currentUserId,
                     'payment_date' => $salaryExpense->date,
@@ -686,13 +685,13 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
             $advanceDeduction = $this->resolveAdvanceDeductionAmount($employeeId, $salaryMonth);
 
             // Get active loan monthly deductions
-            $loanDeduction = (float) \App\Models\TenantPayrollLoan::query()
+            $loanDeduction = (float) Tenant\TenantPayrollLoan::query()
                 ->where('employee_id', $employeeId)
                 ->where('status', 'pending')
                 ->sum('monthly_deduction');
 
             // Calculate how much loan has already been deducted this month
-            $paidThisMonth = (float) \App\Models\TenantPayrollLoanPayment::query()
+            $paidThisMonth = (float) Tenant\TenantPayrollLoanPayment::query()
                 ->where('employee_id', $employeeId)
                 ->where('salary_month', $salaryMonth)
                 ->sum('paid_amount');
@@ -711,7 +710,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
             $previousMonthDue = 0.0;
             try {
                 $previousMonthDate = date('Y-m', strtotime($salaryMonth . '-01 -1 month'));
-                $previousMonthDue = (float) \App\Models\TenantPayrollSalarySheet::query()
+                $previousMonthDue = (float) Tenant\TenantPayrollSalarySheet::query()
                     ->where('employee_id', $employeeId)
                     ->whereHas('generatedSalary', function ($query) use ($previousMonthDate) {
                         $query->where('month', $previousMonthDate);
@@ -738,7 +737,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
             // Calculate actual cash given to employee (total expense - loan payments)
             $totalCashToEmployee = 0.0;
             foreach ($salaryExpenseRecords as $expense) {
-                $expenseLoanPayments = (float) \App\Models\TenantPayrollLoanPayment::query()
+                $expenseLoanPayments = (float) Tenant\TenantPayrollLoanPayment::query()
                     ->where('salary_expense_id', $expense->id)
                     ->sum('paid_amount');
 
@@ -810,7 +809,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
                 return ['success' => false, 'message' => 'Salary month is required', 'remaining_amount' => 0];
             }
 
-            $employee = \App\Models\TenantAllEmployee::query()->find($employeeId);
+            $employee = Tenant\TenantAllEmployee::query()->find($employeeId);
             if (!$employee) {
                 return ['success' => false, 'message' => 'Employee not found', 'remaining_amount' => 0];
             }
@@ -822,7 +821,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
 
             $grossSalary = round((float) ($employee->gross_salary ?? 0), 2);
 
-            $advanceDeduction = (float) \App\Models\TenantPayrollAdvanceSalary::query()
+            $advanceDeduction = (float) Tenant\TenantPayrollAdvanceSalary::query()
                 ->where('employee_id', $employeeId)
                 ->where('salary_month', $salaryMonth)
                 ->whereIn('status', ['paid'])
@@ -831,12 +830,12 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
 
             $advanceDeduction = round($advanceDeduction, 2);
 
-            $loanDeduction = (float) \App\Models\TenantPayrollLoan::query()
+            $loanDeduction = (float) Tenant\TenantPayrollLoan::query()
                 ->where('employee_id', $employeeId)
                 ->where('status', 'pending')
                 ->sum('monthly_deduction');
 
-            $paidThisMonth = (float) \App\Models\TenantPayrollLoanPayment::query()
+            $paidThisMonth = (float) Tenant\TenantPayrollLoanPayment::query()
                 ->where('employee_id', $employeeId)
                 ->where('salary_month', $salaryMonth)
                 ->sum('paid_amount');
@@ -846,7 +845,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
             $previousMonthDue = 0.0;
             try {
                 $previousMonthDate = date('Y-m', strtotime($salaryMonth . '-01 -1 month'));
-                $previousMonthDue = (float) \App\Models\TenantPayrollSalarySheet::query()
+                $previousMonthDue = (float) Tenant\TenantPayrollSalarySheet::query()
                     ->where('employee_id', $employeeId)
                     ->whereHas('generatedSalary', function ($query) use ($previousMonthDate) {
                         $query->where('month', $previousMonthDate);
@@ -859,7 +858,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
             $totalDeductions = $advanceDeduction + $adjustedLoanDeduction;
             $payableAmount = max(0, $grossSalary + $previousMonthDue - $totalDeductions);
 
-            $query = \App\Models\TenantSalaryExpense::query()
+            $query = Tenant\TenantSalaryExpense::query()
                 ->where('paid_to_user_id', $employeeId)
                 ->where('salary_month', $salaryMonth)
                 ->whereIn('category', ['salary', 'salary_payment'])
@@ -874,7 +873,7 @@ class TenantSalaryExpenseService extends BaseService implements TenantSalaryExpe
 
             $totalCashToEmployee = 0.0;
             foreach ($salaryExpenseRecords as $expense) {
-                $expenseLoanPayments = (float) \App\Models\TenantPayrollLoanPayment::query()
+                $expenseLoanPayments = (float) Tenant\TenantPayrollLoanPayment::query()
                     ->where('salary_expense_id', $expense->id)
                     ->sum('paid_amount');
 

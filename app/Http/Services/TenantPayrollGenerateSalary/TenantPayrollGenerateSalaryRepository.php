@@ -3,8 +3,8 @@
 namespace App\Http\Services\TenantPayrollGenerateSalary;
 
 use App\Http\Repositories\BaseRepository;
-use App\Models\TenantPayrollGeneratedSalary;
-use App\Models\TenantPayrollSalarySheet;
+use App\Models\Tenant\TenantPayrollGeneratedSalary;
+use App\Models\Tenant\TenantPayrollSalarySheet;
 use App\Support\DataListManager;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;

@@ -3,7 +3,7 @@
 namespace App\Http\Services\TenantOffice;
 
 use App\Http\Repositories\BaseRepositoryInterface;
-use App\Models\TenantOffice;
+use App\Models\Tenant\TenantOffice;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 

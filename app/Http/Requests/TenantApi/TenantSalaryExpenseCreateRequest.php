@@ -54,7 +54,7 @@ class TenantSalaryExpenseCreateRequest extends BaseFormRequest
                 'exists:tenant.employees,id',
                 function ($attribute, $value, $fail) {
                     // Validate employee is active
-                    $employee = \App\Models\TenantAllEmployee::query()->find($value);
+                    $employee = \App\Models\Tenant\TenantAllEmployee::query()->find($value);
                     if (!$employee || $employee->status !== 1) {
                         $fail('The selected employee is not active or does not exist.');
                     }

@@ -3,7 +3,7 @@
 namespace App\Http\Services\TenantPayrollBonus;
 
 use App\Http\Repositories\BaseRepositoryInterface;
-use App\Models\TenantPayrollBonus;
+use App\Models\Tenant\TenantPayrollBonus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 

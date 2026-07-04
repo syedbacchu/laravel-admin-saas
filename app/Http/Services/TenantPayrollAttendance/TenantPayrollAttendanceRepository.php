@@ -3,7 +3,7 @@
 namespace App\Http\Services\TenantPayrollAttendance;
 
 use App\Http\Repositories\BaseRepository;
-use App\Models\TenantPayrollAttendance;
+use App\Models\Tenant\TenantPayrollAttendance;
 use App\Support\DataListManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;

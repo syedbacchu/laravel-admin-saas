@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\TenantApi;
 
-use App\Models\TenantPayrollSalarySheet;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Tenant\TenantPayrollSalarySheet;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class TenantPayrollSalaryPaymentCreateRequest extends FormRequest
@@ -41,7 +41,7 @@ class TenantPayrollSalaryPaymentCreateRequest extends FormRequest
                 return;
             }
 
-            $totalPaid = \App\Models\TenantPayrollSalaryPayment::where('salary_sheet_id', $salarySheetId)
+            $totalPaid = \App\Models\Tenant\TenantPayrollSalaryPayment::where('salary_sheet_id', $salarySheetId)
                 ->sum('payment_amount');
 
             $netPayable = (float) $salarySheet->net_payable;

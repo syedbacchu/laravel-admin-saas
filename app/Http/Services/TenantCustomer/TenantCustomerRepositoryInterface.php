@@ -3,7 +3,7 @@
 namespace App\Http\Services\TenantCustomer;
 
 use App\Http\Repositories\BaseRepositoryInterface;
-use App\Models\TenantCustomer;
+use App\Models\Tenant\TenantCustomer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 

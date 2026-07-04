@@ -5,8 +5,8 @@ namespace App\Http\Services\TenantDailyOfficeExpense;
 use App\Http\Requests\TenantApi\TenantDailyOfficeExpenseCreateRequest;
 use App\Http\Services\BaseService;
 use App\Models\Tenant;
-use App\Models\TenantDailyOfficeExpense;
-use App\Models\TenantOffice;
+use App\Models\Tenant\TenantDailyOfficeExpense;
+use App\Models\Tenant\TenantOffice;
 use Illuminate\Http\Request;
 use Throwable;
 

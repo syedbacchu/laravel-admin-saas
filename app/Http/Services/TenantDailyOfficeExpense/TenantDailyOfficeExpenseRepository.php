@@ -3,7 +3,7 @@
 namespace App\Http\Services\TenantDailyOfficeExpense;
 
 use App\Http\Repositories\BaseRepository;
-use App\Models\TenantDailyOfficeExpense;
+use App\Models\Tenant\TenantDailyOfficeExpense;
 use App\Support\DataListManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;

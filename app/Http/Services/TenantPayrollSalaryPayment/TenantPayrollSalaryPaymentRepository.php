@@ -3,12 +3,11 @@
 namespace App\Http\Services\TenantPayrollSalaryPayment;
 
 use App\Http\Repositories\BaseRepository;
-use App\Models\TenantEmployee;
-use App\Models\TenantPayrollLoan;
-use App\Models\TenantPayrollSalaryPayment;
-use App\Models\TenantPayrollSalarySheet;
+use App\Models\Tenant\TenantEmployee;
+use App\Models\Tenant\TenantPayrollLoan;
+use App\Models\Tenant\TenantPayrollSalaryPayment;
+use App\Models\Tenant\TenantPayrollSalarySheet;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 
 class TenantPayrollSalaryPaymentRepository extends BaseRepository implements TenantPayrollSalaryPaymentRepositoryInterface
 {

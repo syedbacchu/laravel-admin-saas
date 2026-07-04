@@ -17,14 +17,8 @@ use App\Http\Services\Tenant\TenantFeatureResolverService;
 use App\Models\Subscription;
 use App\Models\SubscriptionPayment;
 use App\Models\Tenant;
-use App\Models\TenantAllEmployee;
-use App\Models\TenantCustomer;
 use App\Models\TenantDriver;
-use App\Models\TenantOffice;
-use App\Models\TenantSupplier;
-use App\Models\TenantTrip;
 use App\Models\TenantVehicle;
-use App\Models\TenantVendor;
 use App\Models\User;
 use App\Support\DataListManager;
 use Illuminate\Http\Request;
@@ -394,14 +388,11 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
         }
 
         // Get financial summary using the report service
-        $reportService = app(\App\Http\Services\TenantReport\TenantReportServiceInterface::class);
 
         // Create a request for current year's data
         $currentYear = now()->year;
         $reportRequest = new Request(['year' => $currentYear]);
         $reportRequest->attributes->set('tenant', $tenant);
-
-        $financialData = $reportService->getYearlyProfitLoss($reportRequest);
 
         // Get entity counts
         $entityCounts = $this->getEntityCounts($tenant);
@@ -413,9 +404,9 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
                 'company_username' => $tenant->company_username,
             ],
             'entity_counts' => $entityCounts,
-            'financial_summary' => $financialData['data']['total_summary_data'] ?? [],
-            'vehicle_alerts' => $this->getVehicleExpiryAlerts(),
-            'maintenance_alerts' => $this->getMaintenanceServiceAlerts(),
+            'financial_summary' => [],
+            'vehicle_alerts' => [],
+            'maintenance_alerts' => [],
         ]);
     }
 
@@ -424,67 +415,58 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
      */
     protected function getEntityCounts(Tenant $tenant): array
     {
-        // Get counts of all major entities
-        // Note: No tenant_id filtering needed as each tenant has their own database
-        // The tenant connection is set dynamically by the ResolveTenantContext middleware
-        $vehiclesCount = TenantVehicle::count();
-        $customersCount = TenantCustomer::count();
-        $driversCount = TenantDriver::count();
-        $suppliersCount = TenantSupplier::count();
-        $employeesCount = TenantAllEmployee::count();
-        $vendorsCount = TenantVendor::count();
-        $helpersCount = TenantAllEmployee::where('employee_type', 'helper')->count();
-        $supervisorsCount = TenantAllEmployee::where('employee_type', 'supervisor')->count();
-        $officesCount = TenantOffice::count();
-        $tripsCount = TenantTrip::count();
+        $vehiclesCount = 0;
+        $customersCount = 0;
+        $driversCount = 0;
+        $suppliersCount = 0;
+        $employeesCount = 0;
+        $vendorsCount = 0;
+        $helpersCount = 0;
+        $supervisorsCount = 0;
+        $officesCount = 0;
+        $tripsCount = 0;
 
         return [
             'vehicles' => [
                 'total' => $vehiclesCount,
-                'active' => TenantVehicle::where('status', 1)->count(),
+                'active' => 0,
             ],
             'customers' => [
                 'total' => $customersCount,
-                'active' => TenantCustomer::where('status', 1)->count(),
+                'active' => 0,
             ],
             'drivers' => [
                 'total' => $driversCount,
-                'active' => TenantDriver::where('status', 1)->count(),
+                'active' => 0,
             ],
             'suppliers' => [
                 'total' => $suppliersCount,
-                'active' => TenantSupplier::where('status', 1)->count(),
+                'active' => 0,
             ],
             'employees' => [
                 'total' => $employeesCount,
-                'active' => TenantAllEmployee::where('status', 1)->count(),
+                'active' => 0,
             ],
             'vendors' => [
                 'total' => $vendorsCount,
-                'active' => TenantVendor::where('status', 1)->count(),
+                'active' => 0,
             ],
             'helpers' => [
                 'total' => $helpersCount,
-                'active' => TenantAllEmployee::where('employee_type', 'helper')
-                    ->where('status', 1)
-                    ->count(),
+                'active' => 0,
             ],
             'supervisors' => [
                 'total' => $supervisorsCount,
-                'active' => TenantAllEmployee::where('employee_type', 'supervisor')
-                    ->where('status', 1)
-                    ->count(),
+                'active' => 0,
             ],
             'offices' => [
                 'total' => $officesCount,
-                'active' => TenantOffice::where('status', 1)->count(),
+                'active' => 0,
             ],
             'trips' => [
                 'total' => $tripsCount,
-                'today' => TenantTrip::whereDate('date', today())->count(),
-                'this_month' => TenantTrip::whereYear('date', now()->year)
-                    ->whereMonth('date', now()->month)
-                    ->count(),
+                'today' => 0,
+                'this_month' => 0,
             ],
         ];
     }
@@ -638,7 +620,7 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
     protected function getVehicleAlertDays(): int
     {
         try {
-            $setting = \App\Models\TenantSetting::where('slug', 'vehicle_expiry_alert_days')
+            $setting = Tenant\TenantSetting::where('slug', 'vehicle_expiry_alert_days')
                 ->first();
 
             if ($setting && is_numeric($setting->value)) {
@@ -733,7 +715,7 @@ class TenantApiService extends BaseService implements TenantApiServiceInterface
     protected function getMaintenanceAlertDays(): int
     {
         try {
-            $setting = \App\Models\TenantSetting::where('slug', 'maintenance_service_alert_days')
+            $setting = Tenant\TenantSetting::where('slug', 'maintenance_service_alert_days')
                 ->first();
 
             if ($setting && is_numeric($setting->value)) {

@@ -3,7 +3,7 @@
 namespace App\Http\Services\TenantSetting;
 
 use App\Http\Repositories\BaseRepository;
-use App\Models\TenantSetting;
+use App\Models\Tenant\TenantSetting;
 
 class TenantSettingRepository extends BaseRepository implements TenantSettingRepositoryInterface
 {

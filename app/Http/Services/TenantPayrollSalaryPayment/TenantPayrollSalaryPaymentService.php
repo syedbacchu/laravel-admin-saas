@@ -2,12 +2,11 @@
 
 namespace App\Http\Services\TenantPayrollSalaryPayment;
 
+use App\Http\Requests\TenantApi\TenantPayrollSalaryPaymentCreateRequest;
 use App\Http\Services\BaseService;
 use App\Models\Tenant;
-use App\Models\TenantPayrollSalarySheet;
 use App\Traits\BlocksLockedPayrollMonths;
 use Illuminate\Http\Request;
-use App\Http\Requests\TenantApi\TenantPayrollSalaryPaymentCreateRequest;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -175,7 +174,7 @@ class TenantPayrollSalaryPaymentService extends BaseService implements TenantPay
                 'status' => (int) ($request->status ?? 1),
             ];
 
-            $salaryExpense = \App\Models\TenantSalaryExpense::create($salaryExpenseData);
+            $salaryExpense = Tenant\TenantSalaryExpense::create($salaryExpenseData);
 
             $payment->salary_expense_id = (int) $salaryExpense->id;
             $payment->save();
@@ -255,7 +254,7 @@ class TenantPayrollSalaryPaymentService extends BaseService implements TenantPay
             $salarySheet = $this->salaryPaymentRepository->getSalarySheetByEmployeeAndMonth($employeeId, $month);
         }
 
-        $payments = \App\Models\TenantPayrollSalaryPayment::where('employee_id', $employeeId)
+        $payments = Tenant\TenantPayrollSalaryPayment::where('employee_id', $employeeId)
             ->when($month, function ($query) use ($month) {
                 return $query->where('salary_month', $month);
             })

@@ -3,7 +3,7 @@
 namespace App\Http\Services\TenantPayrollAdvanceSalary;
 
 use App\Http\Repositories\BaseRepository;
-use App\Models\TenantPayrollAdvanceSalary;
+use App\Models\Tenant\TenantPayrollAdvanceSalary;
 use App\Support\DataListManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;

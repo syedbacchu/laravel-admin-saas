@@ -73,7 +73,7 @@ class PayrollLoanController extends Controller
             return ResponseService::sendError('Tenant context is missing', [], 422);
         }
 
-        $loan = \App\Models\TenantPayrollLoan::with(['payments', 'employee'])
+        $loan = \App\Models\Tenant\TenantPayrollLoan::with(['payments', 'employee'])
             ->where('id', $id)
             ->first();
 
@@ -113,7 +113,7 @@ class PayrollLoanController extends Controller
             return ResponseService::sendError('Employee ID is required', [], 422);
         }
 
-        $loans = \App\Models\TenantPayrollLoan::with(['payments'])
+        $loans = \App\Models\Tenant\TenantPayrollLoan::with(['payments'])
             ->where('employee_id', $employeeId)
             ->where('status', 'pending')
             ->get();

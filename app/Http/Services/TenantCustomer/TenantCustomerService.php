@@ -5,9 +5,9 @@ namespace App\Http\Services\TenantCustomer;
 use App\Http\Requests\TenantApi\TenantCustomerCreateRequest;
 use App\Http\Services\BaseService;
 use App\Models\Tenant;
-use App\Models\TenantCustomer;
-use Illuminate\Support\Facades\DB;
+use App\Models\Tenant\TenantCustomer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class TenantCustomerService extends BaseService implements TenantCustomerServiceInterface

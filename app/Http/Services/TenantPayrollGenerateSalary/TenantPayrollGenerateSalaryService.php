@@ -5,13 +5,12 @@ namespace App\Http\Services\TenantPayrollGenerateSalary;
 use App\Http\Requests\TenantApi\TenantPayrollGenerateSalaryCreateRequest;
 use App\Http\Services\BaseService;
 use App\Models\Tenant;
-use App\Models\TenantEmployee;
-use App\Models\TenantPayrollAdvanceSalary;
-use App\Models\TenantPayrollAttendance;
-use App\Models\TenantPayrollBonus;
-use App\Models\TenantPayrollGeneratedSalary;
-use App\Models\TenantPayrollLoan;
-use App\Models\TenantPayrollSalarySheet;
+use App\Models\Tenant\TenantPayrollAdvanceSalary;
+use App\Models\Tenant\TenantPayrollAttendance;
+use App\Models\Tenant\TenantPayrollBonus;
+use App\Models\Tenant\TenantPayrollGeneratedSalary;
+use App\Models\Tenant\TenantPayrollLoan;
+use App\Models\Tenant\TenantPayrollSalarySheet;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -335,7 +334,7 @@ class TenantPayrollGenerateSalaryService extends BaseService implements TenantPa
     protected function attachSalarySheetData(TenantPayrollGeneratedSalary $item): void
     {
         $rows = $this->tenantPayrollGenerateSalaryRepository->salarySheetRows((int) $item->id);
-        
+
         $employeeIds = $rows->pluck('employee_id')->map(fn ($id) => (int) $id)->all();
         $employeeMap = $this->resolveEmployeeMap($employeeIds);
 

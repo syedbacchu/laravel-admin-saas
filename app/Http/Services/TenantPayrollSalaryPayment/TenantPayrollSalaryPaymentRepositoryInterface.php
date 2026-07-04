@@ -6,11 +6,11 @@ use App\Http\Repositories\BaseRepositoryInterface;
 
 interface TenantPayrollSalaryPaymentRepositoryInterface extends BaseRepositoryInterface
 {
-    public function findSalarySheet(int $salarySheetId): ?\App\Models\TenantPayrollSalarySheet;
+    public function findSalarySheet(int $salarySheetId): ?\App\Models\Tenant\TenantPayrollSalarySheet;
 
-    public function findEmployee(int $employeeId): ?\App\Models\TenantEmployee;
+    public function findEmployee(int $employeeId): ?\App\Models\Tenant\TenantEmployee;
 
-    public function getSalarySheetByEmployeeAndMonth(int $employeeId, string $month): ?\App\Models\TenantPayrollSalarySheet;
+    public function getSalarySheetByEmployeeAndMonth(int $employeeId, string $month): ?\App\Models\Tenant\TenantPayrollSalarySheet;
 
     public function getPreviousDueAmount(int $employeeId, string $currentMonth): float;
 

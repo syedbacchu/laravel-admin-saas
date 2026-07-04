@@ -3,7 +3,7 @@
 namespace App\Http\Services\TenantPayrollGenerateSalary;
 
 use App\Http\Repositories\BaseRepositoryInterface;
-use App\Models\TenantPayrollGeneratedSalary;
+use App\Models\Tenant\TenantPayrollGeneratedSalary;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;

@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\TenantPayrollGeneratedSalary;
+use App\Models\Tenant\TenantPayrollGeneratedSalary;
 
 trait BlocksLockedPayrollMonths
 {

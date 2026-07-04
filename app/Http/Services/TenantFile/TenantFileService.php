@@ -2,11 +2,11 @@
 
 namespace App\Http\Services\TenantFile;
 
-use App\Http\Requests\TenantApi\TenantFileUploadRequest;
 use App\Http\Requests\TenantApi\TenantFileUpdateRequest;
+use App\Http\Requests\TenantApi\TenantFileUploadRequest;
 use App\Http\Services\BaseService;
 use App\Models\Tenant;
-use App\Models\TenantFile;
+use App\Models\Tenant\TenantFile;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
