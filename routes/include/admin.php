@@ -66,6 +66,8 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
         Route::get('/', [TenantController::class, 'index'])->name('list');
         Route::get('/create', [TenantController::class, 'create'])->name('create');
         Route::post('/', [TenantController::class, 'store'])->name('store');
+        Route::get('/edit/{id}', [TenantController::class, 'edit'])->name('edit');
+        Route::put('/update/{id}', [TenantController::class, 'update'])->name('update');
         Route::post('/backup/{id}', [TenantController::class, 'backup'])->name('backup');
         Route::get('/backups/{id}', [TenantController::class, 'backups'])->name('backups');
         Route::get('/download-backup/{tenant}/{filename}', [TenantController::class, 'downloadBackup'])->name('downloadBackup');

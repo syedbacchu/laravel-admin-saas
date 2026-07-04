@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\TenantCreateRequest;
+use App\Http\Requests\Tenant\TenantUpdateRequest;
 use App\Http\Services\Response\ResponseService;
 use App\Http\Services\Tenant\TenantServiceInterface;
 use App\Support\DataListManager;
@@ -56,8 +57,16 @@ class TenantController extends Controller
                         $item->created_at?->diffForHumans(),
 
                     'actions' => function ($item) {
+                        $editUrl = route('tenant.edit', $item->id);
                         $backupUrl = route('tenant.backup', $item->id);
                         $backupsUrl = route('tenant.backups', $item->id);
+
+                        $editBtn = '<a href="' . $editUrl . '" class="btn btn-sm btn-info me-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        Edit
+                                    </a>';
 
                         $backupBtn = '<button onclick="backupTenant(\'' . $backupUrl . '\', \'' . e($item->company_name) . '\')"
                                         class="btn btn-sm btn-primary me-1">
@@ -74,7 +83,7 @@ class TenantController extends Controller
                                           List
                                         </a>';
 
-                        return '<div class="flex items-center">' . $backupBtn . $listBackupsBtn . '</div>';
+                        return '<div class="flex items-center">' . $editBtn . $backupBtn . $listBackupsBtn . '</div>';
                     },
                 ],
                 rawColumns: ['company', 'owner', 'status','actions']
@@ -101,6 +110,40 @@ class TenantController extends Controller
     {
         try {
             $response = $this->service->storeOrUpdateTenant($request);
+            return ResponseService::send([
+                'response' => $response,
+            ], successRoute: 'tenant.list');
+        } catch (Throwable $e) {
+            return ResponseService::exception($e);
+        }
+    }
+
+    public function edit(Request $request, $id)
+    {
+        try {
+            $data['pageTitle'] = __('Edit Tenant');
+            $data['function_type'] = 'edit';
+            $tenant = $this->service->getTenant($id);
+
+            if (!$tenant) {
+                return back()->with('error', __('Tenant not found'));
+            }
+
+            $data['tenant'] = $tenant;
+            $data = array_merge($data, $this->service->tenantCreateData($request)['data']);
+
+            return ResponseService::send([
+                'data' => $data,
+            ], view: viewss('tenant', 'create'));
+        } catch (Throwable $e) {
+            return back()->with('error', __('Failed to load tenant: ' . $e->getMessage()));
+        }
+    }
+
+    public function update(TenantUpdateRequest $request, $id): RedirectResponse
+    {
+        try {
+            $response = $this->service->updateTenant($request, $id);
             return ResponseService::send([
                 'response' => $response,
             ], successRoute: 'tenant.list');

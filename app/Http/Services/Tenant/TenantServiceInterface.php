@@ -3,11 +3,13 @@
 namespace App\Http\Services\Tenant;
 
 use App\Http\Requests\Tenant\TenantCreateRequest;
+use App\Http\Requests\Tenant\TenantUpdateRequest;
 
 interface TenantServiceInterface
 {
     public function getDataTableData($request): array;
     public function storeOrUpdateTenant(TenantCreateRequest $request): array;
+    public function updateTenant(TenantUpdateRequest $request, $tenantId): array;
     public function tenantCreateData($request): array;
     public function getTenant($tenantId): mixed;
     public function backupTenantDatabase($tenantId): array;

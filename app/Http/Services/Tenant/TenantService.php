@@ -3,8 +3,11 @@
 namespace App\Http\Services\Tenant;
 
 use App\Http\Requests\Tenant\TenantCreateRequest;
+use App\Http\Requests\Tenant\TenantUpdateRequest;
 use App\Http\Services\BaseService;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class TenantService extends BaseService implements TenantServiceInterface
 {
@@ -34,6 +37,54 @@ class TenantService extends BaseService implements TenantServiceInterface
         }
 
         return $this->tenantProvisionService->provision($request->validated());
+    }
+
+    public function updateTenant(TenantUpdateRequest $request, $tenantId): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $tenant = $this->tenantRepository->find((int) $tenantId);
+            if (!$tenant) {
+                return $this->sendResponse(false, __('Tenant not found'));
+            }
+
+            // Update tenant information
+            $tenant->update([
+                'company_name' => $request->validated('company_name'),
+                'company_username' => $request->validated('company_username'),
+            ]);
+
+            // Update owner user information
+            if ($tenant->owner) {
+                $ownerData = [
+                    'name' => $request->validated('owner_name'),
+                    'username' => $request->validated('company_username'),
+                    'email' => $request->validated('owner_email'),
+                    'phone' => $request->validated('owner_phone'),
+                ];
+
+                // Only update password if provided
+                if ($request->filled('owner_password')) {
+                    $ownerData['password'] = Hash::make($request->validated('owner_password'));
+                }
+
+                $tenant->owner->update($ownerData);
+            }
+
+            DB::commit();
+
+            return $this->sendResponse(true, __('Tenant updated successfully'), [
+                'tenant' => $tenant->load('owner'),
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logStore('TenantService updateTenant', $e->getMessage());
+            return $this->sendResponse(false, __('Failed to update tenant'), [
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function tenantCreateData($request): array
