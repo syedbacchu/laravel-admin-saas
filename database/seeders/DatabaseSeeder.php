@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
             LanguageSeeder::class,
             FeatureSeeder::class,
             PaymentMethodSeeder::class,
-            VehicleCategorySeeder::class,
             SettingFieldSeeder::class,
             AdminSettingSeeder::class,
             PostCategorySeeder::class,
