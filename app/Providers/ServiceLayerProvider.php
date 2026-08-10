@@ -14,6 +14,14 @@ use App\Http\Services\DatabaseBackup\DatabaseBackupRepository;
 use App\Http\Services\DatabaseBackup\DatabaseBackupRepositoryInterface;
 use App\Http\Services\DatabaseBackup\DatabaseBackupService;
 use App\Http\Services\DatabaseBackup\DatabaseBackupServiceInterface;
+use App\Http\Services\District\DistrictRepository;
+use App\Http\Services\District\DistrictRepositoryInterface;
+use App\Http\Services\District\DistrictService;
+use App\Http\Services\District\DistrictServiceInterface;
+use App\Http\Services\Division\DivisionRepository;
+use App\Http\Services\Division\DivisionRepositoryInterface;
+use App\Http\Services\Division\DivisionService;
+use App\Http\Services\Division\DivisionServiceInterface;
 use App\Http\Services\TenantHelper\TenantHelperRepository;
 use App\Http\Services\TenantHelper\TenantHelperRepositoryInterface;
 use App\Http\Services\TenantHelper\TenantHelperService;
@@ -130,6 +138,10 @@ use App\Http\Services\TenantReport\TenantReportService;
 use App\Http\Services\TenantReport\TenantReportServiceInterface;
 use App\Http\Services\TenantReport\TenantReportRepository;
 use App\Http\Services\TenantReport\TenantReportRepositoryInterface;
+use App\Http\Services\Thana\ThanaRepository;
+use App\Http\Services\Thana\ThanaRepositoryInterface;
+use App\Http\Services\Thana\ThanaService;
+use App\Http\Services\Thana\ThanaServiceInterface;
 use App\Http\Services\VendorPayment\VendorPaymentService;
 use App\Http\Services\VendorPayment\VendorPaymentServiceInterface;
 use App\Http\Services\VendorPayment\VendorPaymentRepository;
@@ -325,15 +337,6 @@ class ServiceLayerProvider extends ServiceProvider
         $this->app->bind(TenantApiRepositoryInterface::class, TenantApiRepository::class);
         $this->app->bind(TenantApiServiceInterface::class, TenantApiService::class);
 
-        $this->app->bind(TenantAreaRepositoryInterface::class, TenantAreaRepository::class);
-        $this->app->bind(TenantAreaServiceInterface::class, TenantAreaService::class);
-
-        $this->app->bind(TenantVehicleRepositoryInterface::class, TenantVehicleRepository::class);
-        $this->app->bind(TenantVehicleServiceInterface::class, TenantVehicleService::class);
-
-        $this->app->bind(TenantDriverRepositoryInterface::class, TenantDriverRepository::class);
-        $this->app->bind(TenantDriverServiceInterface::class, TenantDriverService::class);
-
         $this->app->bind(TenantStaffRepositoryInterface::class, TenantStaffRepository::class);
         $this->app->bind(TenantStaffServiceInterface::class, TenantStaffService::class);
 
@@ -342,26 +345,11 @@ class ServiceLayerProvider extends ServiceProvider
         $this->app->bind(TenantCustomerRepositoryInterface::class, TenantCustomerRepository::class);
         $this->app->bind(TenantCustomerServiceInterface::class, TenantCustomerService::class);
 
-        $this->app->bind(TenantHelperRepositoryInterface::class, TenantHelperRepository::class);
-        $this->app->bind(TenantHelperServiceInterface::class, TenantHelperService::class);
-
-        $this->app->bind(TenantSupervisorRepositoryInterface::class, TenantSupervisorRepository::class);
-        $this->app->bind(TenantSupervisorServiceInterface::class, TenantSupervisorService::class);
-
         $this->app->bind(TenantOfficeRepositoryInterface::class, TenantOfficeRepository::class);
         $this->app->bind(TenantOfficeServiceInterface::class, TenantOfficeService::class);
 
-        $this->app->bind(TenantVendorRepositoryInterface::class, TenantVendorRepository::class);
-        $this->app->bind(TenantVendorServiceInterface::class, TenantVendorService::class);
-
-        $this->app->bind(TenantRentVehicleRepositoryInterface::class, TenantRentVehicleRepository::class);
-        $this->app->bind(TenantRentVehicleServiceInterface::class, TenantRentVehicleService::class);
-
         $this->app->bind(TenantRoutePricingRepositoryInterface::class, TenantRoutePricingRepository::class);
         $this->app->bind(TenantRoutePricingServiceInterface::class, TenantRoutePricingService::class);
-
-        $this->app->bind(TenantTripRepositoryInterface::class, TenantTripRepository::class);
-        $this->app->bind(TenantTripServiceInterface::class, TenantTripService::class);
 
         $this->app->bind(TenantDailyOfficeExpenseRepositoryInterface::class, TenantDailyOfficeExpenseRepository::class);
         $this->app->bind(TenantDailyOfficeExpenseServiceInterface::class, TenantDailyOfficeExpenseService::class);
@@ -390,70 +378,23 @@ class ServiceLayerProvider extends ServiceProvider
         $this->app->bind(TenantPayrollSalaryPaymentRepositoryInterface::class, TenantPayrollSalaryPaymentRepository::class);
         $this->app->bind(TenantPayrollSalaryPaymentServiceInterface::class, TenantPayrollSalaryPaymentService::class);
 
-        $this->app->bind(TenantFuelPurchaseRepositoryInterface::class, TenantFuelPurchaseRepository::class);
-        $this->app->bind(TenantFuelPurchaseServiceInterface::class, TenantFuelPurchaseService::class);
-
-        $this->app->bind(TenantFuelLedgerRepositoryInterface::class, TenantFuelLedgerRepository::class);
-        $this->app->bind(TenantFuelLedgerServiceInterface::class, TenantFuelLedgerService::class);
-
         $this->app->bind(TenantFileRepositoryInterface::class, TenantFileRepository::class);
         $this->app->bind(TenantFileServiceInterface::class, TenantFileService::class);
 
         $this->app->bind(TenantSettingRepositoryInterface::class, TenantSettingRepository::class);
         $this->app->bind(TenantSettingServiceInterface::class, TenantSettingService::class);
 
-        $this->app->bind(TenantFundTransferRepositoryInterface::class, TenantFundTransferRepository::class);
-        $this->app->bind(TenantFundTransferServiceInterface::class, TenantFundTransferService::class);
-
-        $this->app->bind(TenantPaymentReceiveRepositoryInterface::class, TenantPaymentReceiveRepository::class);
-        $this->app->bind(TenantPaymentReceiveServiceInterface::class, TenantPaymentReceiveService::class);
-
-        $this->app->bind(TenantVendorPaymentRepositoryInterface::class, TenantVendorPaymentRepository::class);
-        $this->app->bind(TenantVendorPaymentServiceInterface::class, TenantVendorPaymentService::class);
-
-        $this->app->bind(TenantSupplierRepositoryInterface::class, TenantSupplierRepository::class);
-        $this->app->bind(TenantSupplierServiceInterface::class, TenantSupplierService::class);
-
-        $this->app->bind(TenantMaintenancePurchaseRepositoryInterface::class, TenantMaintenancePurchaseRepository::class);
-        $this->app->bind(TenantMaintenancePurchaseServiceInterface::class, TenantMaintenancePurchaseService::class);
-
-        $this->app->bind(TenantOfficialProductPurchaseRepositoryInterface::class, TenantOfficialProductPurchaseRepository::class);
-        $this->app->bind(TenantOfficialProductPurchaseServiceInterface::class, TenantOfficialProductPurchaseService::class);
-
-        $this->app->bind(PurchasePaymentServiceInterface::class, PurchasePaymentService::class);
-
-        $this->app->bind(PurchasePaymentRepositoryInterface::class, PurchasePaymentRepository::class);
-
-        $this->app->bind(TenantReportServiceInterface::class, TenantReportService::class);
-
-        $this->app->bind(TenantReportRepositoryInterface::class, TenantReportRepository::class);
-
-        $this->app->bind(VendorPaymentRepositoryInterface::class, VendorPaymentRepository::class);
-        $this->app->bind(VendorPaymentServiceInterface::class, VendorPaymentService::class);
-
-        $this->app->bind(DriverPaymentRepositoryInterface::class, DriverPaymentRepository::class);
-        $this->app->bind(DriverPaymentServiceInterface::class, DriverPaymentService::class);
-
-        $this->app->bind(HelperLedgerRepositoryInterface::class, HelperLedgerRepository::class);
-        $this->app->bind(HelperLedgerServiceInterface::class, HelperLedgerService::class);
-
         $this->app->bind(PricingPlanRepositoryInterface::class, PricingPlanRepository::class);
         $this->app->bind(PricingPlanServiceInterface::class, PricingPlanService::class);
 
-        $this->app->bind(VehicleCategoryRepositoryInterface::class, VehicleCategoryRepository::class);
-        $this->app->bind(VehicleCategoryServiceInterface::class, VehicleCategoryService::class);
+        $this->app->bind(DivisionRepositoryInterface::class, DivisionRepository::class);
+        $this->app->bind(DivisionServiceInterface::class, DivisionService::class);
 
-        $this->app->bind(VehicleCategorySizeRepositoryInterface::class, VehicleCategorySizeRepository::class);
-        $this->app->bind(VehicleCategorySizeServiceInterface::class, VehicleCategorySizeService::class);
+        $this->app->bind(DistrictRepositoryInterface::class, DistrictRepository::class);
+        $this->app->bind(DistrictServiceInterface::class, DistrictService::class);
 
-        $this->app->bind(RegistrationSerialRepositoryInterface::class, RegistrationSerialRepository::class);
-        $this->app->bind(RegistrationSerialServiceInterface::class, RegistrationSerialService::class);
-
-        $this->app->bind(RegistrationZoneRepositoryInterface::class, RegistrationZoneRepository::class);
-        $this->app->bind(RegistrationZoneServiceInterface::class, RegistrationZoneService::class);
-
-        $this->app->bind(AreaRepositoryInterface::class, AreaRepository::class);
-        $this->app->bind(AreaServiceInterface::class, AreaService::class);
+        $this->app->bind(ThanaRepositoryInterface::class, ThanaRepository::class);
+        $this->app->bind(ThanaServiceInterface::class, ThanaService::class);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Services\Slider;
 
+use App\Enums\StatusEnum;
 use App\Http\Repositories\BaseRepository;
 use App\Models\Slider;
 use App\Support\DataListManager;
@@ -24,29 +25,37 @@ class SliderRepository extends BaseRepository implements SliderRepositoryInterfa
 
             searchable: [
                 'title',
-                'offer',
+                'subtitle',
             ],
 
             filters: [
-                'published' => [
-                    'column' => 'published'
+                'status' => [
+                    'column' => 'status'
                 ],
                 'type' => [
                     'column' => 'type'
+                ],
+                'site_type' => [
+                    'column' => 'site_type'
                 ],
             ],
 
             select: [
                 'id',
                 'photo',
-                'position',
                 'title',
                 'subtitle',
-                'offer',
-                'published',
+                'description',
+                'tagline',
+                'status',
                 'link',
+                'mobile_banner',
                 'type',
                 'serial',
+                'video_link',
+                'page',
+                'cta_button',
+                'stat',
             ],
         );
     }
@@ -56,5 +65,14 @@ class SliderRepository extends BaseRepository implements SliderRepositoryInterfa
         return $this->create($data);
     }
 
+    public function findPublicByIdentifier(string $identifier): ?Slider
+    {
+        return Slider::query()
+            ->where('status', enum(StatusEnum::ACTIVE->value))
+            ->where(function ($query) use ($identifier) {
+                $query->where('id', $identifier);
+            })
+            ->first();
+    }
 
 }

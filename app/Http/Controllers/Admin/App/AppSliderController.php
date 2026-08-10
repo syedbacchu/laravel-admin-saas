@@ -26,6 +26,7 @@ class AppSliderController extends Controller
     public function index(Request $request): View|JsonResponse
     {
         $data['pageTitle'] = __('Slider');
+
         if ($request->ajax()) {
             return DataListManager::dataTableHandle(
                 request: $request,
@@ -44,11 +45,11 @@ class AppSliderController extends Controller
                     'created_at' => fn ($item) =>
                         $item->created_at?->diffForHumans(),
 
-                    'published' => fn ($item) =>
+                    'status' => fn ($item) =>
                         toggle_column(
                             route('appSlider.publish'),
                             $item->id,
-                            $item->published == 1
+                            $item->status == 1
                         ),
 
                     'actions' => fn ($item) =>
@@ -57,7 +58,7 @@ class AppSliderController extends Controller
                             delete_column(route('appSlider.delete', $item->id)),
                         ]),
                 ],
-                rawColumns: ['photo', 'actions','published']
+                rawColumns: ['photo', 'actions','status']
             );
         }
 

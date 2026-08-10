@@ -252,9 +252,34 @@ return [
                 'permission' => 'language.list',
             ],
             [
-                'label' => 'Create Language',
-                'route' => 'language.create',
-                'permission' => 'language.create',
+                'label' => 'Newsletter Subscribers',
+                'route' => 'subscriber.index',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Testimonials List',
+                'route' => 'testimonial.list',
+                'permission' => 'testimonial.list',
+            ],
+            [
+                'label' => 'Contact Messages',
+                'route' => 'contact.index',
+                'permission' => null,
+            ],
+            [
+                'label' => 'Division List',
+                'route' => 'division.index',
+                'permission' => 'division.index',
+            ],
+            [
+                'label' => 'District List',
+                'route' => 'district.index',
+                'permission' => 'district.index',
+            ],
+            [
+                'label' => 'Thana List',
+                'route' => 'thana.index',
+                'permission' => 'thana.index',
             ],
             [
                 'label' => 'Database Backups',

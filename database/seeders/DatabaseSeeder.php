@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
             AdminSettingSeeder::class,
             PostCategorySeeder::class,
             TagSeeder::class,
+            DivisionSeeder::class,
+            DistrictSeeder::class,
+            ThanaSeeder::class,
         ]);
     }
 }

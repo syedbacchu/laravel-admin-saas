@@ -16,6 +16,12 @@ use App\Http\Controllers\Api\Tenant\SubscriptionController as TenantSubscription
 use App\Http\Controllers\Api\PricingPlanController;
 use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\User\ProfileController;
+use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\Testimonials\TestimonialsController;
+use App\Http\Controllers\Api\Subscriber\SubscriberController;
+use App\Http\Controllers\Api\Contact\ContactController;
+use App\Http\Controllers\Api\Slider\SliderController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -44,6 +50,30 @@ Route::group(['middleware' => ['api.protection']], function () {
     Route::group(['prefix' => 'pricing-plan', 'as' => 'apiPricingPlan.'], function () {
         Route::get('/', [PricingPlanController::class, 'index'])->name('list');
         Route::get('{identifier}', [PricingPlanController::class, 'show'])->name('details');
+    });
+
+    Route::group(['prefix' => 'location', 'as' => 'apiLocation.'], function () {
+        Route::get('divisions', [LocationController::class, 'divisions'])->name('divisions');
+        Route::get('districts', [LocationController::class, 'districts'])->name('districts');
+        Route::get('thanas', [LocationController::class, 'thanas'])->name('thanas');
+    });
+
+    Route::group(['prefix' => 'testimonials', 'as' => 'apiTestimonial.'], function () {
+        Route::get('/', [TestimonialsController::class, 'index'])->name('list');
+        Route::get('{identifier}', [TestimonialsController::class, 'show'])->name('details');
+    });
+
+    Route::group(['prefix' => 'contact', 'as' => 'apiContact.'], function () {
+        Route::post('/', [ContactController::class, 'store'])->name('store');
+    });
+
+    Route::group(['prefix' => 'subscriber', 'as' => 'apiSubscriber.'], function () {
+        Route::post('subscribe', [SubscriberController::class, 'subscribe'])->name('subscribe');
+    });
+
+    Route::group(['prefix' => 'sliders', 'as' => 'slider.'], function () {
+        Route::get('/', [SliderController::class, 'index'])->name('list');
+        Route::get('{identifier}', [SliderController::class, 'show'])->name('details');
     });
 
     Route::group(['middleware' => ['auth:api'], 'prefix' => 'user', 'as' => 'apiUser.'], function () {

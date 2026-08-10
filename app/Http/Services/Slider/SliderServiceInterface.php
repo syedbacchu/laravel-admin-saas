@@ -17,5 +17,7 @@ interface SliderServiceInterface extends BaseServiceInterface
     public function storeOrUpdateSlider(SliderCreateRequest $request): array; // For store producty
     public function deleteSlider($id): array; // For delete producty
     public function publishSlider($id,$status): array; // For status producty
+    public function getPublicList(Request $request): array;
+    public function getPublicDetails(string $identifier): array;
 
 }

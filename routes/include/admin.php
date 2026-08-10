@@ -23,15 +23,15 @@ use App\Http\Controllers\Admin\Post\PostCategoryController;
 use App\Http\Controllers\Admin\Post\PostCommentController;
 use App\Http\Controllers\Admin\Post\PostController;
 use App\Http\Controllers\Admin\Post\TagController;
-use App\Http\Controllers\Admin\Vehicle\AreaController;
-use App\Http\Controllers\Admin\Vehicle\RegistrationSerialController;
-use App\Http\Controllers\Admin\Vehicle\RegistrationZoneController;
 use App\Http\Controllers\Admin\User\UserController;
-use App\Http\Controllers\Admin\Vehicle\VehicleCategoryController;
-use App\Http\Controllers\Admin\Vehicle\VehicleCategorySizeController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Admin\Division\DivisionController;
+use App\Http\Controllers\Admin\District\DistrictController;
+use App\Http\Controllers\Admin\Thana\ThanaController;
+use App\Http\Controllers\Admin\Subscriber\SubscriberController;
+use App\Http\Controllers\Admin\Testimonial\TestimonialController;
+use App\Http\Controllers\Admin\Contact\ContactController;
 
 Route::get('log', [Sdtech\LogViewerLaravel\Controllers\LogViewerLaravelController::class, 'index'])->name('errorLog');
 
@@ -216,13 +216,13 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
     Route::resource('app-slider', AppSliderController::class)
         ->except(['destroy'])
         ->names([
-        'index'   => 'appSlider.list',
-        'create'   => 'appSlider.create',
-        'edit'   => 'appSlider.edit',
-        'store'   => 'appSlider.store',
-        'update'  => 'appSlider.update',
-        'show' => 'appSlider.show',
-    ]);
+            'index'   => 'appSlider.list',
+            'create'   => 'appSlider.create',
+            'edit'   => 'appSlider.edit',
+            'store'   => 'appSlider.store',
+            'update'  => 'appSlider.update',
+            'show' => 'appSlider.show',
+        ]);
     Route::group(['prefix' => 'app-slider', 'as' => 'appSlider.'], function () {
         Route::get('app-slider-delete/{id}', [AppSliderController::class, 'destroy'])->name('delete');
         Route::post('publish', [AppSliderController::class, 'publish'])->name('publish');
@@ -365,3 +365,85 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
     Route::group(['prefix' => 'faq', 'as' => 'faq.'], function () {
         Route::post('publish', [FaqController::class, 'faqStatus'])->name('publish');
     });
+
+// Division
+Route::resource('division', DivisionController::class)
+    ->except(['destroy'])
+    ->names([
+        'index'   => 'division.index',
+        'create'   => 'division.create',
+        'edit'   => 'division.edit',
+        'store'   => 'division.store',
+        'update'  => 'division.update',
+        'show' => 'division.show',
+    ]);
+Route::group(['prefix' => 'division', 'as' => 'division.'], function () {
+    Route::get('delete/{id}', [DivisionController::class, 'destroy'])->name('destroy');
+    Route::post('status', [DivisionController::class, 'status'])->name('status');
+    Route::get('list', [DivisionController::class, 'list'])->name('list');
+});
+
+// District
+Route::resource('district', DistrictController::class)
+    ->except(['destroy'])
+    ->names([
+        'index'   => 'district.index',
+        'create'   => 'district.create',
+        'edit'   => 'district.edit',
+        'store'   => 'district.store',
+        'update'  => 'district.update',
+        'show' => 'district.show',
+    ]);
+Route::group(['prefix' => 'district', 'as' => 'district.'], function () {
+    Route::get('delete/{id}', [DistrictController::class, 'destroy'])->name('destroy');
+    Route::post('status', [DistrictController::class, 'status'])->name('status');
+    Route::get('list', [DistrictController::class, 'list'])->name('list');
+});
+
+// Thana
+Route::resource('thana', ThanaController::class)
+    ->except(['destroy'])
+    ->names([
+        'index'   => 'thana.index',
+        'create'   => 'thana.create',
+        'edit'   => 'thana.edit',
+        'store'   => 'thana.store',
+        'update'  => 'thana.update',
+        'show' => 'thana.show',
+    ]);
+Route::group(['prefix' => 'thana', 'as' => 'thana.'], function () {
+    Route::get('delete/{id}', [ThanaController::class, 'destroy'])->name('destroy');
+    Route::post('status', [ThanaController::class, 'status'])->name('status');
+    Route::get('list', [ThanaController::class, 'list'])->name('list');
+    Route::get('get-by-district', [ThanaController::class, 'getByDistrict'])->name('getByDistrict');
+});
+
+// Subscriber Management
+Route::group(['prefix' => 'subscriber', 'as' => 'subscriber.'], function () {
+    Route::get('/', [SubscriberController::class, 'index'])->name('index');
+    Route::post('toggle-status', [SubscriberController::class, 'toggleStatus'])->name('toggleStatus');
+    Route::delete('delete', [SubscriberController::class, 'destroy'])->name('delete');
+});
+
+// Testimonial
+Route::resource('testimonials', TestimonialController::class)
+    ->except(['destroy'])
+    ->names([
+        'index'   => 'testimonial.list',
+        'create'   => 'testimonial.create',
+        'edit'   => 'testimonial.edit',
+        'store'   => 'testimonial.store',
+        'update'  => 'testimonial.update',
+        'show' => 'testimonial.show',
+    ]);
+Route::group(['prefix' => 'testimonials', 'as' => 'testimonial.'], function () {
+    Route::get('testimonial-delete/{id}', [TestimonialController::class, 'destroy'])->name('delete');
+    Route::post('publish', [TestimonialController::class, 'testimonialStatus'])->name('publish');
+});
+
+// Contact Management
+Route::group(['prefix' => 'contact', 'as' => 'contact.'], function () {
+    Route::get('/', [ContactController::class, 'index'])->name('index');
+    Route::get('show', [ContactController::class, 'show'])->name('show');
+    Route::post('reply/{id}', [ContactController::class, 'reply'])->name('reply');
+});

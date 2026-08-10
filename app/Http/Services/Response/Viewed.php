@@ -102,7 +102,29 @@ class Viewed
         'databaseBackup' => [
             'list' => 'admin.database_backup.list',
             'create' => 'admin.database_backup.create',
-        ]
+        ],
+        'division' => [
+            'list' => 'admin.division.index',
+            'create' => 'admin.division.create',
+        ],
+        'district' => [
+            'list' => 'admin.district.index',
+            'create' => 'admin.district.create',
+        ],
+        'thana' => [
+            'list' => 'admin.thana.index',
+            'create' => 'admin.thana.create',
+        ],
+        'subscriber' => [
+            'list' => 'admin.subscriber.list',
+        ],
+        'testimonial' => [
+            'list' => 'admin.testimonial.index',
+            'create' => 'admin.testimonial.create',
+        ],
+        'contact' => [
+            'list' => 'admin.contact.list',
+        ],
     ];
 
     /**

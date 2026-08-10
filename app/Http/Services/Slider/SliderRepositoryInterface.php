@@ -12,4 +12,5 @@ interface SliderRepositoryInterface extends BaseRepositoryInterface
 {
     public function dataList(Request $request): array;
     public function createSlider(array $data): Model;
+    public function findPublicByIdentifier(string $identifier): ?Model;
 }

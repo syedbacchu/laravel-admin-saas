@@ -13,36 +13,23 @@ class Slider extends Model
 
     protected $fillable = [
         'photo',
-        'position',
         'title',
         'subtitle',
-        'offer',
-        'published',
+        'description',
+        'tagline',
+        'status',
         'link',
         'mobile_banner',
         'type',
         'serial',
-        'video_link'
+        'video_link',
+        'page',
+        'cta_button',
+        'stat',
     ];
 
-//    public function getRawPhotoAttribute()
-//    {
-//        return $this->attributes['photo'];
-//    }
-//    public function getRawMobileBannerAttribute()
-//    {
-//        return $this->attributes['mobile_banner'];
-//    }
-//
-//    public function getPhotoAttribute($value)
-//    {
-//        if (empty($value)) return '';
-//        return asset('uploads/'.$value);
-//    }
-//
-//    public function getMobileBannerAttribute($value)
-//    {
-//        if (empty($value)) return '';
-//        return asset('uploads/'.$value);
-//    }
+    protected $casts = [
+        'cta_button' => 'array',
+        'stat' => 'array',
+    ];
 }
