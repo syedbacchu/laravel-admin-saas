@@ -9,7 +9,7 @@
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
             <div>
                 <h5 class="text-2xl font-bold text-gray-800">{{ $pageTitle ?? __('Component Fields') }}</h5>
-                <p class="text-gray-600 mt-1">{{ __('Component:') }} {{ $component->name }}</p>
+                <p class="text-gray-600 mt-1">{{ __('Component:') }} {{ $componentModel->name }}</p>
             </div>
 
             <div class="flex gap-3">
@@ -23,7 +23,7 @@
                     {{__('Back')}}
                 </a>
 
-                <a href="{{ route('component.field.create', $component->id) }}"
+                <a href="{{ route('component.field.create', $componentModel->id) }}"
                 class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg hover:from-indigo-700 hover:to-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
@@ -44,9 +44,9 @@
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                    <h4 class="font-semibold text-blue-800">{{ $component->name }}</h4>
-                    <p class="text-sm text-blue-600">{{ $component->description ?? __('No description provided') }}</p>
-                    <p class="text-xs text-blue-500 mt-1">{{ __('Slug:') }} {{ $component->slug }}</p>
+                    <h4 class="font-semibold text-blue-800">{{ $componentModel->name }}</h4>
+                    <p class="text-sm text-blue-600">{{ $componentModel->description ?? __('No description provided') }}</p>
+                    <p class="text-xs text-blue-500 mt-1">{{ __('Slug:') }} {{ $componentModel->slug }}</p>
                 </div>
             </div>
         </div>
@@ -75,7 +75,7 @@ $(document).ready(function() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: '{{ route("component.field.index", $component->id) }}',
+            url: '{{ route("component.field.index", $componentModel->id) }}',
             type: 'GET',
             data: function(d) {
                 d.list_size = 'datatable';

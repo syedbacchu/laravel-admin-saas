@@ -86,7 +86,7 @@ class ComponentController extends Controller
         }
 
         $data['pageTitle'] = __('Component Details');
-        $data['component'] = $response;
+        $data['componentModel'] = $response;
         $data['function_type'] = 'view';
 
         return view(viewss('component', 'show'), $data);
@@ -99,10 +99,10 @@ class ComponentController extends Controller
             return ResponseService::send();
         }
 
-        $component = $response;
+        $componentModel = $response;
         $data['pageTitle'] = __('Update Component');
         $data['function_type'] = 'update';
-        $data['item'] = $component;
+        $data['item'] = $componentModel;
         $data['field_types'] = $this->getFieldTypes();
 
         return view(viewss('component', 'create'), $data);
@@ -144,12 +144,12 @@ class ComponentController extends Controller
             return ResponseService::send();
         }
 
-        $component = $response;
-        $pageTitle = __('Manage Fields: ') . $component->name;
+        $componentModel = $response;
+        $pageTitle = __('Manage Fields: ') . $componentModel->name;
         $field_types = $this->getFieldTypes();
 
         if ($request->ajax()) {
-            $componentId = $component->id;
+            $componentId = $componentModel->id;
             return DataListManager::dataTableHandle(
                 request: $request,
                 dataProvider: function ($request) use ($componentId) {
@@ -177,7 +177,7 @@ class ComponentController extends Controller
             );
         }
 
-        return view(viewss('component', 'fields'), compact('pageTitle', 'component', 'field_types'));
+        return view(viewss('component', 'fields'), compact('pageTitle', 'componentModel', 'field_types'));
     }
 
     private function getFieldTypes(): array

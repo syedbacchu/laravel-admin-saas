@@ -52,6 +52,15 @@ enum FieldTypeEnum: string
 
     public static function toSelectArray(): array
     {
+        $array = [];
+        foreach (self::cases() as $case) {
+            $array[$case->value] = $case->getLabel();
+        }
+        return $array;
+    }
+
+    public static function toDetailedSelectArray(): array
+    {
         return array_map(fn ($case) => [
             'value' => $case->value,
             'label' => $case->getLabel(),

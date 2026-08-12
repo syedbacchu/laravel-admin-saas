@@ -6,9 +6,9 @@
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
                 {{ $pageTitle }}
             </h1>
-            <a href="{{ route('component.fields', $component->id) }}"
+            <a href="{{ route('component.fields', $componentModel->id) }}"
                 class="text-sm text-blue-600 hover:text-blue-800">
-                {{__('Back to Fields')}} → {{ $component->name }}
+                {{__('Back to Fields')}} → {{ $componentModel->name }}
             </a>
         </div>
 
@@ -146,7 +146,7 @@
 
                 <!-- Actions -->
                 <div class="flex items-center justify-end mt-6 pt-6 border-t border-gray-200">
-                    <a href="{{ route('component.field.edit', ['component' => $component->id, 'field' => $field->id]) }}"
+                    <a href="{{ route('component.field.edit', ['component' => $componentModel->id, 'field' => $field->id]) }}"
                         class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         {{ __('Edit Field') }}
                     </a>

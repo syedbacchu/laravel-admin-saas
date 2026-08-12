@@ -33,13 +33,13 @@ class ComponentFieldController extends Controller
             return ResponseService::send();
         }
 
-        $component = $response;
+        $componentModel = $response;
 
-        $data['pageTitle'] = __('Create Field for: ') . $component->name;
+        $data['pageTitle'] = __('Create Field for: ') . $componentModel->name;
         $data['function_type'] = 'create';
-        $data['component'] = $component;
+        $data['componentModel'] = $componentModel;
         $data['field_types'] = $this->getFieldTypes();
-        $data['parent_fields'] = $this->componentFieldService->getParentFields($component->id)['data'] ?? collect();
+        $data['parent_fields'] = $this->componentFieldService->getParentFields($componentModel->id)['data'] ?? collect();
 
         return view(viewss('component', 'field_create'), $data);
     }
@@ -49,7 +49,7 @@ class ComponentFieldController extends Controller
         $response = $this->componentFieldService->storeOrUpdateField($request, (int)$component);
         return ResponseService::send([
             'response' => $response,
-        ], successRoute: 'component.fields', $component);
+        ], null, null, ['id' => $component], 'component.fields');
     }
 
     public function show(string $component, string $id)
@@ -59,11 +59,11 @@ class ComponentFieldController extends Controller
             return ResponseService::send();
         }
 
-        $component = app(\App\Http\Services\Component\ComponentServiceInterface::class)->getComponentWithFields($component);
+        $componentModel = app(\App\Http\Services\Component\ComponentServiceInterface::class)->getComponentWithFields($component);
         $field = $response;
 
         $data['pageTitle'] = __('Field Details');
-        $data['component'] = $component;
+        $data['componentModel'] = $componentModel;
         $data['field'] = $field;
         $data['function_type'] = 'view';
 
@@ -82,15 +82,15 @@ class ComponentFieldController extends Controller
             return ResponseService::send();
         }
 
-        $component = $componentResponse;
+        $componentModel = $componentResponse;
         $field = $fieldResponse;
 
         $data['pageTitle'] = __('Update Field');
         $data['function_type'] = 'update';
-        $data['component'] = $component;
+        $data['componentModel'] = $componentModel;
         $data['item'] = $field;
         $data['field_types'] = $this->getFieldTypes();
-        $data['parent_fields'] = $this->componentFieldService->getParentFields($component->id)['data'] ?? collect();
+        $data['parent_fields'] = $this->componentFieldService->getParentFields($componentModel->id)['data'] ?? collect();
 
         return view(viewss('component', 'field_create'), $data);
     }
@@ -102,7 +102,7 @@ class ComponentFieldController extends Controller
 
         return ResponseService::send([
             'response' => $response,
-        ], successRoute: 'component.fields', $component);
+        ], null, null, ['id' => $component], 'component.fields');
     }
 
     public function destroy(string $component, string $id): RedirectResponse
@@ -110,7 +110,7 @@ class ComponentFieldController extends Controller
         $response = $this->componentFieldService->deleteField((int)$id);
         return ResponseService::send([
             'response' => $response,
-        ], successRoute: 'component.fields', $component);
+        ], null, null, ['id' => $component], 'component.fields');
     }
 
     public function updateSortOrder(Request $request): JsonResponse

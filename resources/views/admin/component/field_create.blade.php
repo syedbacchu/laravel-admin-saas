@@ -6,9 +6,9 @@
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
                 {{ $pageTitle }}
             </h1>
-            <a href="{{ route('component.fields', $component->id) }}"
+            <a href="{{ route('component.fields', $componentModel->id) }}"
                 class="text-sm text-blue-600 hover:text-blue-800">
-                {{__('Back to Fields')}} → {{ $component->name }}
+                {{__('Back to Fields')}} → {{ $componentModel->name }}
             </a>
         </div>
 
@@ -21,15 +21,15 @@
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span class="text-sm text-blue-600">
-                    {{__('Adding field to')}} <strong>{{ $component->name }}</strong>
+                    {{__('Adding field to')}} <strong>{{ $componentModel->name }}</strong>
                 </span>
             </div>
         </div>
 
         <div>
             <form method="POST" action="{{ $function_type === 'create'
-    ? route('component.field.store', $component->id)
-    : route('component.field.update', ['component' => $component->id, 'field' => $item->id]) }}" enctype="multipart/form-data">
+    ? route('component.field.store', $componentModel->id)
+    : route('component.field.update', ['component' => $componentModel->id, 'field' => $item->id]) }}" enctype="multipart/form-data">
                 @csrf
                 @if($function_type === 'update')
                     @method('PUT')
@@ -202,7 +202,7 @@
 
                 <!-- Submit Button -->
                 <div class="flex items-center justify-end mt-6">
-                    <a href="{{ route('component.fields', $component->id) }}"
+                    <a href="{{ route('component.fields', $componentModel->id) }}"
                         class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 mr-3">
                         {{ __('Cancel') }}
                     </a>
