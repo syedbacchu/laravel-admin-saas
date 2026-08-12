@@ -127,6 +127,14 @@ class Viewed
         'contact' => [
             'list' => 'admin.contact.list',
         ],
+        'component' => [
+            'list' => 'admin.component.list',
+            'create' => 'admin.component.create',
+            'fields' => 'admin.component.fields',
+            'field_create' => 'admin.component.field_create',
+            'field_show' => 'admin.component.field_show',
+            'show' => 'admin.component.show',
+        ],
     ];
 
     /**

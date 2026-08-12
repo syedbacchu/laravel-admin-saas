@@ -10,6 +10,14 @@ use App\Http\Services\Contact\ContactRepository;
 use App\Http\Services\Contact\ContactRepositoryInterface;
 use App\Http\Services\Contact\ContactService;
 use App\Http\Services\Contact\ContactServiceInterface;
+use App\Http\Services\Component\ComponentRepository;
+use App\Http\Services\Component\ComponentRepositoryInterface;
+use App\Http\Services\Component\ComponentService;
+use App\Http\Services\Component\ComponentServiceInterface;
+use App\Http\Services\ComponentField\ComponentFieldRepository;
+use App\Http\Services\ComponentField\ComponentFieldRepositoryInterface;
+use App\Http\Services\ComponentField\ComponentFieldService;
+use App\Http\Services\ComponentField\ComponentFieldServiceInterface;
 use App\Http\Services\CustomField\CustomFieldRepository;
 use App\Http\Services\CustomField\CustomFieldRepositoryInterface;
 use App\Http\Services\CustomField\CustomFieldService;
@@ -319,6 +327,13 @@ class ServiceLayerProvider extends ServiceProvider
 
         $this->app->bind(ContactRepositoryInterface::class, ContactRepository::class);
         $this->app->bind(ContactServiceInterface::class, ContactService::class);
+
+        // Component & ComponentField Services
+        $this->app->bind(ComponentRepositoryInterface::class, ComponentRepository::class);
+        $this->app->bind(ComponentServiceInterface::class, ComponentService::class);
+
+        $this->app->bind(ComponentFieldRepositoryInterface::class, ComponentFieldRepository::class);
+        $this->app->bind(ComponentFieldServiceInterface::class, ComponentFieldService::class);
     }
 
     /**

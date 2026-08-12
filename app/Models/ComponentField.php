@@ -25,4 +25,19 @@ class ComponentField extends Model
         'is_required' => 'boolean',
         'is_translatable' => 'boolean',
     ];
+
+    public function component()
+    {
+        return $this->belongsTo(Component::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(ComponentField::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(ComponentField::class, 'parent_id')->orderBy('sort_order');
+    }
 }

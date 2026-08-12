@@ -32,6 +32,8 @@ use App\Http\Controllers\Admin\Thana\ThanaController;
 use App\Http\Controllers\Admin\Subscriber\SubscriberController;
 use App\Http\Controllers\Admin\Testimonial\TestimonialController;
 use App\Http\Controllers\Admin\Contact\ContactController;
+use App\Http\Controllers\Admin\Component\ComponentController;
+use App\Http\Controllers\Admin\Component\ComponentFieldController;
 
 Route::get('log', [Sdtech\LogViewerLaravel\Controllers\LogViewerLaravelController::class, 'index'])->name('errorLog');
 
@@ -450,4 +452,35 @@ Route::group(['prefix' => 'contact', 'as' => 'contact.'], function () {
     Route::get('/', [ContactController::class, 'index'])->name('index');
     Route::get('show', [ContactController::class, 'show'])->name('show');
     Route::post('reply/{id}', [ContactController::class, 'reply'])->name('reply');
+});
+
+// Component Management
+Route::resource('components', ComponentController::class)
+    ->except(['destroy'])
+    ->names([
+        'index' => 'component.list',
+        'create' => 'component.create',
+        'edit' => 'component.edit',
+        'store' => 'component.store',
+        'update' => 'component.update',
+        'show' => 'component.show',
+    ]);
+
+Route::group(['prefix' => 'components', 'as' => 'component.'], function () {
+    Route::get('component-delete/{id}', [ComponentController::class, 'destroy'])->name('delete');
+    Route::post('publish', [ComponentController::class, 'publishComponent'])->name('publish');
+    Route::get('{id}/fields', [ComponentController::class, 'fields'])->name('fields');
+
+    // Component Field Management
+    Route::group(['prefix' => '{component}/fields', 'as' => 'field.'], function () {
+        Route::get('/', [ComponentFieldController::class, 'index'])->name('index');
+        Route::get('/create', [ComponentFieldController::class, 'create'])->name('create');
+        Route::post('/', [ComponentFieldController::class, 'store'])->name('store');
+        Route::get('/{field}', [ComponentFieldController::class, 'show'])->name('show');
+        Route::get('/{field}/edit', [ComponentFieldController::class, 'edit'])->name('edit');
+        Route::put('/{field}', [ComponentFieldController::class, 'update'])->name('update');
+        Route::get('/field-delete/{field}', [ComponentFieldController::class, 'destroy'])->name('delete');
+        Route::post('update-sort-order', [ComponentFieldController::class, 'updateSortOrder'])->name('updateSortOrder');
+        Route::get('children/{parentId}', [ComponentFieldController::class, 'getChildren'])->name('children');
+    });
 });

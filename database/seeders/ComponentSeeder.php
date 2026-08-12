@@ -656,7 +656,7 @@ class ComponentSeeder extends Seeder
                     [
                         'name' => $componentData['name'],
                         'description' => $componentData['description'] ?? null,
-                        'status' => true,
+                        'status' => 1,
                     ]
                 );
 

@@ -216,6 +216,34 @@ return [
         ],
     ],
     [
+        'key' => 'page_builder',
+        'label' => 'Page Builder',
+        'icon' => 'page-builder',
+        'permission' => null,
+        'children' => [
+            [
+                'label' => 'Components',
+                'route' => 'component.list',
+                'permission' => 'component.list',
+            ],
+            [
+                'label' => 'Create Component',
+                'route' => 'component.create',
+                'permission' => 'component.create',
+            ],
+//            [
+//                'label' => 'Pages',
+//                'route' => 'page.list',
+//                'permission' => 'page.list',
+//            ],
+//            [
+//                'label' => 'Create Page',
+//                'route' => 'page.create',
+//                'permission' => 'page.create',
+//            ],
+        ],
+    ],
+    [
         'key' => 'file_manager',
         'label' => 'File Manager',
         'route' => 'fileManager.list',
