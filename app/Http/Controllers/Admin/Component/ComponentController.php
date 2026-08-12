@@ -160,7 +160,13 @@ class ComponentController extends Controller
                 columns: [
                     'name' => fn ($item) => $item->name,
                     'label' => fn ($item) => $item->label,
-                    'field_type' => fn ($item) => '<span class="badge badge-info">' . $item->field_type . '</span>',
+                    'field_type' => function ($item) {
+                        $fieldType = \App\Enums\FieldTypeEnum::tryFrom($item->field_type);
+                        $label = $fieldType ? $fieldType->getLabel() : $item->field_type;
+                        return '<span class="inline-flex items-center px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-medium">
+                            ' . $label . '
+                        </span>';
+                    },
                     'is_required' => fn ($item) => $item->is_required
                         ? '<span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>

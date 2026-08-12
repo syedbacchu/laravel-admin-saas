@@ -83,6 +83,7 @@
                         'language' => ['lang'],
                         'settings' => ['setting'],
                         'app' => ['app', 'slider', 'onboard'],
+                        'components' => ['component.','fields']
                     ];
 
                     if (isset($parentRouteGroups[$menuKey])) {
