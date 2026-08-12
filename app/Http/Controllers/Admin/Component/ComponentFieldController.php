@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Component;
 
 use App\Http\Controllers\Controller;
+use App\Enums\FieldTypeEnum;
 use App\Http\Services\ComponentField\ComponentFieldServiceInterface;
 use App\Http\Services\Response\ResponseService;
 use App\Support\DataListManager;
@@ -40,9 +41,7 @@ class ComponentFieldController extends Controller
         $data['field_types'] = $this->getFieldTypes();
         $data['parent_fields'] = $this->componentFieldService->getParentFields($component->id)['data'] ?? collect();
 
-        return ResponseService::send([
-            'data' => $data,
-        ], null, viewss('component', 'field_create'));
+        return view(viewss('component', 'field_create'), $data);
     }
 
     public function store(Request $request, string $component): RedirectResponse
@@ -68,9 +67,7 @@ class ComponentFieldController extends Controller
         $data['field'] = $field;
         $data['function_type'] = 'view';
 
-        return ResponseService::send([
-            'data' => $data,
-        ], null, viewss('component', 'field_show'));
+        return view(viewss('component', 'field_show'), $data);
     }
 
     public function edit(Request $request, string $component, string $id)
@@ -95,9 +92,7 @@ class ComponentFieldController extends Controller
         $data['field_types'] = $this->getFieldTypes();
         $data['parent_fields'] = $this->componentFieldService->getParentFields($component->id)['data'] ?? collect();
 
-        return ResponseService::send([
-            'data' => $data,
-        ], null, viewss('component', 'field_create'));
+        return view(viewss('component', 'field_create'), $data);
     }
 
     public function update(Request $request, string $component, string $id): RedirectResponse
@@ -146,24 +141,6 @@ class ComponentFieldController extends Controller
 
     private function getFieldTypes(): array
     {
-        return [
-            'text' => __('Text'),
-            'textarea' => __('Textarea'),
-            'richtext' => __('Rich Text'),
-            'number' => __('Number'),
-            'boolean' => __('Boolean'),
-            'url' => __('URL'),
-            'image' => __('Image'),
-            'responsive_image' => __('Responsive Image'),
-            'select' => __('Select'),
-            'relation' => __('Relation'),
-            'repeatable' => __('Repeatable'),
-            'video' => __('Video'),
-            'file' => __('File'),
-            'date' => __('Date'),
-            'datetime' => __('DateTime'),
-            'color' => __('Color'),
-            'group' => __('Group'),
-        ];
+        return FieldTypeEnum::toSelectArray();
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Component;
 
 use App\Http\Controllers\Controller;
+use App\Enums\FieldTypeEnum;
 use App\Http\Services\Component\ComponentServiceInterface;
 use App\Http\Services\Response\ResponseService;
 use App\Support\DataListManager;
@@ -57,9 +58,7 @@ class ComponentController extends Controller
             );
         }
 
-        return ResponseService::send([
-            'data' => $data,
-        ], null, viewss('component', 'list'));
+        return view(viewss('component', 'list'), $data);
     }
 
     public function create(Request $request)
@@ -68,9 +67,7 @@ class ComponentController extends Controller
         $data['function_type'] = 'create';
         $data['field_types'] = $this->getFieldTypes();
 
-        return ResponseService::send([
-            'data' => $data,
-        ], null, viewss('component', 'create'));
+        return view(viewss('component', 'create'), $data);
     }
 
     public function store(Request $request): RedirectResponse
@@ -92,9 +89,7 @@ class ComponentController extends Controller
         $data['component'] = $response;
         $data['function_type'] = 'view';
 
-        return ResponseService::send([
-            'data' => $data,
-        ], null, viewss('component', 'show'));
+        return view(viewss('component', 'show'), $data);
     }
 
     public function edit(string $id)
@@ -110,9 +105,7 @@ class ComponentController extends Controller
         $data['item'] = $component;
         $data['field_types'] = $this->getFieldTypes();
 
-        return ResponseService::send([
-            'data' => $data,
-        ], null, viewss('component', 'create'));
+        return view(viewss('component', 'create'), $data);
     }
 
     public function update(Request $request, string $id): RedirectResponse
@@ -152,9 +145,8 @@ class ComponentController extends Controller
         }
 
         $component = $response;
-        $data['pageTitle'] = __('Manage Fields: ') . $component->name;
-        $data['component'] = $component;
-        $data['field_types'] = $this->getFieldTypes();
+        $pageTitle = __('Manage Fields: ') . $component->name;
+        $field_types = $this->getFieldTypes();
 
         if ($request->ajax()) {
             $componentId = $component->id;
@@ -172,7 +164,7 @@ class ComponentController extends Controller
                     'is_required' => fn ($item) => $item->is_required ? '<i class="fas fa-check text-success"></i>' : '-',
                     'is_translatable' => fn ($item) => $item->is_translatable ? '<i class="fas fa-language text-primary"></i>' : '-',
                     'parent' => fn ($item) => $item->parent ? '<small>' . $item->parent->label . '</small>' : '-',
-                    'actions' => function ($item) {
+                    'actions' => function ($item) use ($componentId) {
                         $buttons = [
                             edit_column(route('component.field.edit', ['component' => $componentId, 'field' => $item->id])),
                             delete_column(route('component.field.delete', ['component' => $componentId, 'field' => $item->id])),
@@ -185,31 +177,11 @@ class ComponentController extends Controller
             );
         }
 
-        return ResponseService::send([
-            'data' => $data,
-        ], null, viewss('component', 'fields'));
+        return view(viewss('component', 'fields'), compact('pageTitle', 'component', 'field_types'));
     }
 
     private function getFieldTypes(): array
     {
-        return [
-            'text' => __('Text'),
-            'textarea' => __('Textarea'),
-            'richtext' => __('Rich Text'),
-            'number' => __('Number'),
-            'boolean' => __('Boolean'),
-            'url' => __('URL'),
-            'image' => __('Image'),
-            'responsive_image' => __('Responsive Image'),
-            'select' => __('Select'),
-            'relation' => __('Relation'),
-            'repeatable' => __('Repeatable'),
-            'video' => __('Video'),
-            'file' => __('File'),
-            'date' => __('Date'),
-            'datetime' => __('DateTime'),
-            'color' => __('Color'),
-            'group' => __('Group'),
-        ];
+        return FieldTypeEnum::toSelectArray();
     }
 }
