@@ -69,7 +69,6 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
                 'is_comment_allow',
                 'published_at',
                 'created_at',
-                'site_type',
             ],
         );
     }
