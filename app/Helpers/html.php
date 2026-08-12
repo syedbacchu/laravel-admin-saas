@@ -175,3 +175,27 @@ if (! function_exists('view_button')) {
         HTML;
     }
 }
+if (! function_exists('field_button')) {
+    function field_button(string $route, string $label = 'Field'): string
+    {
+        return <<<HTML
+        <a href="{$route}"
+            title="{$label}"
+            class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 rounded-lg transition duration-200"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10.5 6h9.75M10.5 18h9.75M10.5 12h9.75M3.75 6h.008v.008H3.75V6zm0 6h.008v.008H3.75V12zm0 6h.008v.008H3.75V18z"
+                />
+            </svg>
+        </a>
+        HTML;
+    }
+}

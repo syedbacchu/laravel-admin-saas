@@ -41,13 +41,13 @@ class ComponentController extends Controller
                     toggle_column(
                         route('component.publish'),
                         $item->id,
-                        $item->status === 1
+                        $item->status == 1
                     ),
 
                     'actions' => function ($item) {
                         $buttons = [
                             edit_column(route('component.edit', $item->id)),
-                            '<a href="' . route('component.fields', $item->id) . '" class="btn btn-sm btn-info"><i class="fas fa-list"></i></a>',
+                            field_button(route('component.fields', $item->id)),
                             delete_column(route('component.delete', $item->id)),
                         ];
 
@@ -161,8 +161,18 @@ class ComponentController extends Controller
                     'name' => fn ($item) => $item->name,
                     'label' => fn ($item) => $item->label,
                     'field_type' => fn ($item) => '<span class="badge badge-info">' . $item->field_type . '</span>',
-                    'is_required' => fn ($item) => $item->is_required ? '<i class="fas fa-check text-success"></i>' : '-',
-                    'is_translatable' => fn ($item) => $item->is_translatable ? '<i class="fas fa-language text-primary"></i>' : '-',
+                    'is_required' => fn ($item) => $item->is_required
+                        ? '<span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            ' . __('Yes') . '
+                           </span>'
+                        : '<span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">' . __('No') . '</span>',
+                    'is_translatable' => fn ($item) => $item->is_translatable
+                        ? '<span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4v16M7 4h4m-4 0h4M7 8h4m-4 0h4" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            ' . __('Yes') . '
+                           </span>'
+                        : '<span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">' . __('No') . '</span>',
                     'parent' => fn ($item) => $item->parent ? '<small>' . $item->parent->label . '</small>' : '-',
                     'actions' => function ($item) use ($componentId) {
                         $buttons = [
