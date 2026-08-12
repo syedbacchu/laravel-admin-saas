@@ -39,9 +39,9 @@ class TenantUpdateRequest extends BaseFormRequest
         $ownerUserId = $tenant?->owner_user_id;
 
         return [
-            'company_name' => ['required', 'string', 'max:150'],
+            'company_name' => ['nullable', 'string', 'max:150'],
             'company_username' => [
-                'required',
+                'nullable',
                 'string',
                 'min:3',
                 'max:60',

@@ -1,4 +1,49 @@
-<ul class="perfect-scrollbar font-semibold space-y-0.5" x-data="{ activeMenu: '{{ collect($sidebarMenus)->first(fn($menu) => !empty($menu['children']) && collect($menu['children'])->pluck('route')->contains(fn ($route) => request()->routeIs($route))) ? ($menu['key'] ?? '') : '' }}' }">
+@php
+    // Get current route for initial menu state
+    $currentRouteName = request()->route()->getName();
+
+    // Find which parent menu should be active based on current route
+    $activeParentMenu = collect($sidebarMenus)->first(function($menu) use ($currentRouteName) {
+        if (empty($menu['children'])) {
+            return false;
+        }
+
+        // Check exact matches first
+        $childRoutes = collect($menu['children'])->pluck('route');
+        if ($childRoutes->contains(fn($route) => $currentRouteName === $route)) {
+            return true;
+        }
+
+        // Check if current route belongs to this parent group
+        if (isset($menu['key'])) {
+            $parentRouteGroups = [
+                'tenants' => ['tenant.', 'backups', 'logs', 'backup', 'migrate'],
+                'users' => ['user.', 'profile'],
+                'billing' => ['subscription', 'payment', 'feature', 'plan'],
+                'role' => ['permission'],
+                'language' => ['lang'],
+                'vehicle_management' => ['vehicle', 'area', 'registration'],
+                'settings' => ['setting'],
+                'app' => ['app', 'slider', 'onboard'],
+            ];
+
+            if (isset($parentRouteGroups[$menu['key']])) {
+                $keywords = $parentRouteGroups[$menu['key']];
+                foreach ($keywords as $keyword) {
+                    if (str_contains($currentRouteName, $keyword)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    });
+
+    $initialActiveMenu = $activeParentMenu ? ($activeParentMenu['key'] ?? '') : '';
+@endphp
+
+<ul class="perfect-scrollbar font-semibold space-y-0.5" x-data="{ activeMenu: '{{ $initialActiveMenu }}' }">
 
     @foreach($sidebarMenus as $menu)
 
@@ -14,12 +59,43 @@
                 </a>
             </li>
 
-        {{-- ================= DROPDOWN ================= --}}
+            {{-- ================= DROPDOWN ================= --}}
         @else
             @php
-                $isChildActive = collect($menu['children'])
-                    ->pluck('route')
+                // Get current route name
+                $currentRoute = request()->route()->getName();
+
+                // Check if any child route matches exactly
+                $childRoutes = collect($menu['children'])->pluck('route')->toArray();
+                $isChildActive = collect($childRoutes)
                     ->contains(fn ($route) => request()->routeIs($route));
+
+                // If no exact match, check if current route belongs to this parent menu group
+                if (!$isChildActive && isset($menu['key'])) {
+                    $menuKey = $menu['key'];
+
+                    // Define parent menu route groups
+                    $parentRouteGroups = [
+                        'tenants' => ['tenant.', 'backups', 'logs', 'backup', 'migrate'],
+                        'users' => ['user.', 'profile'],
+                        'billing' => ['subscription', 'payment', 'feature', 'plan'],
+                        'role' => ['permission'],
+                        'language' => ['lang'],
+                        'settings' => ['setting'],
+                        'app' => ['app', 'slider', 'onboard'],
+                    ];
+
+                    if (isset($parentRouteGroups[$menuKey])) {
+                        $relatedKeywords = $parentRouteGroups[$menuKey];
+                        foreach ($relatedKeywords as $keyword) {
+                            if (str_contains($currentRoute, $keyword)) {
+                                $isChildActive = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 $menuKey = $menu['key'] ?? $loop->index;
             @endphp
 

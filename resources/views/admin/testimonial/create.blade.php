@@ -103,17 +103,13 @@
                         <h3 class="font-semibold text-base">{{ __('Images') }}</h3>
                     </div>
                     <div class="p-4 space-y-4">
-                        <div x-data="fileManager('{{ $item->image ?? old('image', '') }}', 'image')" class="space-y-2">
-                            <label class="text-xs uppercase font-semibold text-gray-500">{{ __('image') }}</label>
-                            <button type="button"
-                                    x-on:click="$dispatch('open-file-manager', { callback: callbackName })"
-                                    class="btn btn-outline-primary btn-sm w-full">
-                                {{ __('Choose image') }}
-                            </button>
-                            <input type="hidden" name="image" x-model="fileUrl">
-                            <template x-if="filePreview">
-                                <img :src="filePreview" class="rounded-lg border object-cover w-full max-h-[160px]">
-                            </template>
+                        <div>
+                            <x-common.file-manager-upload
+                                name="image"
+                                :value="$item->image ?? ''"
+                                label="Image"
+                                helpText="Recommended: 375x812px"
+                            />
                         </div>
                     </div>
                 </div>

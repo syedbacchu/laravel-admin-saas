@@ -87,5 +87,126 @@
                 }
             });
         }
+
+        function migrateTenant(migrateUrl, companyName) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Ask for reason
+            const reason = prompt('Please provide the reason for running migrations for ' + companyName + ':');
+
+            if (reason === null) {
+                return false; // User cancelled
+            }
+
+            if (reason.trim() === '') {
+                alert('Please provide a reason for running migrations.');
+                return false;
+            }
+
+            if (!confirm('Are you sure you want to run migrations for ' + companyName + '?')) {
+                return false;
+            }
+
+            // Show loading state
+            const btn = event.target.closest('button');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Migrating...';
+
+            // Send AJAX request for migration
+            $.ajax({
+                url: migrateUrl,
+                type: 'POST',
+                data: {
+                    reason: reason
+                },
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+
+                    if (response.success) {
+                        let message = 'Migration completed successfully!';
+                        if (response.data && response.data.migrations_run) {
+                            message += '\nMigrations run: ' + response.data.migrations_run;
+                        }
+                        alert(message);
+                    } else {
+                        alert('Migration failed: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function(xhr) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    alert('Migration failed: ' + (xhr.responseJSON?.message || 'Server error'));
+                }
+            });
+        }
+
+        function migrateTenantFresh(migrateFreshUrl, companyName) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Ask for reason
+            const reason = prompt('Please provide the reason for running FRESH migrations for ' + companyName + ' (this will delete all data):');
+
+            if (reason === null) {
+                return false; // User cancelled
+            }
+
+            if (reason.trim() === '') {
+                alert('Please provide a reason for running fresh migrations.');
+                return false;
+            }
+
+            if (!confirm('WARNING: This will delete all data and re-create tables for ' + companyName + '. Are you sure you want to run fresh migration?')) {
+                return false;
+            }
+
+            // Double confirmation for destructive operation
+            if (!confirm('This action cannot be undone. All data will be permanently deleted. Continue?')) {
+                return false;
+            }
+
+            // Show loading state
+            const btn = event.target.closest('button');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Fresh migrating...';
+
+            // Send AJAX request for fresh migration
+            $.ajax({
+                url: migrateFreshUrl,
+                type: 'POST',
+                data: {
+                    reason: reason
+                },
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+
+                    if (response.success) {
+                        let message = 'Fresh migration completed successfully! Database has been reset.';
+                        if (response.data && response.data.migrations_run) {
+                            message += '\nMigrations run: ' + response.data.migrations_run;
+                        }
+                        alert(message);
+                    } else {
+                        alert('Fresh migration failed: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function(xhr) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    alert('Fresh migration failed: ' + (xhr.responseJSON?.message || 'Server error'));
+                }
+            });
+        }
     </script>
 </x-layout.default>

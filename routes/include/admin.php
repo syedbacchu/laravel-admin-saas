@@ -66,13 +66,17 @@ Route::group(['middleware' => ['skip.permission','no.permission.sync']], functio
         Route::get('/', [TenantController::class, 'index'])->name('list');
         Route::get('/create', [TenantController::class, 'create'])->name('create');
         Route::post('/', [TenantController::class, 'store'])->name('store');
-        Route::get('/edit/{id}', [TenantController::class, 'edit'])->name('edit');
-        Route::put('/update/{id}', [TenantController::class, 'update'])->name('update');
+        Route::get('/{id}/edit', [TenantController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [TenantController::class, 'update'])->name('update');
         Route::post('/backup/{id}', [TenantController::class, 'backup'])->name('backup');
         Route::get('/backups/{id}', [TenantController::class, 'backups'])->name('backups');
         Route::get('/download-backup/{tenant}/{filename}', [TenantController::class, 'downloadBackup'])->name('downloadBackup');
         Route::get('/diagnose/{id}', [TenantController::class, 'diagnose'])->name('diagnose');
         Route::delete('/backup/{tenant}/{filename}', [TenantController::class, 'deleteBackup'])->name('deleteBackup');
+        Route::post('/migrate/{id}', [TenantController::class, 'migrate'])->name('migrate');
+        Route::post('/migrate-fresh/{id}', [TenantController::class, 'migrateFresh'])->name('migrateFresh');
+        Route::get('/logs/{id}', [TenantController::class, 'logs'])->name('logs');
+
     });
 
     Route::resource('languages', LanguageController::class)

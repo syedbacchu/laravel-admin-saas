@@ -40,7 +40,7 @@
                     class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100
                            flex flex-col items-center justify-center gap-3 transition-all duration-300">
 
-                    <a href="{{ asset($item->path) }}" target="_blank"
+                    <a href="{{ asset($item->full_url) }}" target="_blank"
                        class="bg-white text-gray-900 text-xs font-semibold px-4 py-1.5 rounded-lg shadow">
                         {{__('View')}}
                     </a>

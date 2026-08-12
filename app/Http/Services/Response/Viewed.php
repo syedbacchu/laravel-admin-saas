@@ -50,7 +50,9 @@ class Viewed
         'tenant' => [
             'list' => 'admin.tenant.index',
             'create' => 'admin.tenant.create',
+            'edit' => 'admin.tenant.edit',
             'backups' => 'admin.tenant.backups',
+            'logs' => 'admin.tenant.logs',
         ],
         'file' => [
             'list_data'  => 'admin.file_manager.list',

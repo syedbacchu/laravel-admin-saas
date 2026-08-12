@@ -54,12 +54,15 @@ class TenantController extends Controller
                     },
 
                     'created_at' => fn($item) =>
-                        $item->created_at?->diffForHumans(),
+                    $item->created_at?->diffForHumans(),
 
                     'actions' => function ($item) {
-                        $editUrl = route('tenant.edit', $item->id);
                         $backupUrl = route('tenant.backup', $item->id);
                         $backupsUrl = route('tenant.backups', $item->id);
+                        $editUrl = route('tenant.edit', $item->id);
+                        $migrateUrl = route('tenant.migrate', $item->id);
+                        $migrateFreshUrl = route('tenant.migrateFresh', $item->id);
+                        $logsUrl = route('tenant.logs', $item->id);
 
                         $editBtn = '<a href="' . $editUrl . '" class="btn btn-sm btn-info me-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,14 +79,38 @@ class TenantController extends Controller
                                         Backup
                                     </button>';
 
-                        $listBackupsBtn = '<a href="' . $backupsUrl . '" class="btn btn-sm btn-secondary">
+                        $listBackupsBtn = '<a href="' . $backupsUrl . '" class="btn btn-sm btn-secondary me-1">
                                           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                                           </svg>
                                           List
                                         </a>';
 
-                        return '<div class="flex items-center">' . $editBtn . $backupBtn . $listBackupsBtn . '</div>';
+                        $migrateBtn = '<button onclick="migrateTenant(\'' . $migrateUrl . '\', \'' . e($item->company_name) . '\')"
+                                        class="btn btn-sm btn-success me-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Migrate
+                                    </button>';
+
+                        $migrateFreshBtn = '<button onclick="migrateTenantFresh(\'' . $migrateFreshUrl . '\', \'' . e($item->company_name) . '\')"
+                                        class="btn btn-sm btn-danger me-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Fresh
+                                    </button>';
+
+                        $logsBtn = '<a href="' . $logsUrl . '" class="btn btn-sm btn-dark me-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Logs
+                                    </a>';
+
+
+                        return '<div class="flex items-center gap-2">' . $editBtn . $backupBtn . $listBackupsBtn . $migrateBtn . $migrateFreshBtn . $logsBtn  . '</div>';
                     },
                 ],
                 rawColumns: ['company', 'owner', 'status','actions']
@@ -121,22 +148,21 @@ class TenantController extends Controller
     public function edit(Request $request, $id)
     {
         try {
-            $data['pageTitle'] = __('Edit Tenant');
-            $data['function_type'] = 'edit';
             $tenant = $this->service->getTenant($id);
 
             if (!$tenant) {
-                return back()->with('error', __('Tenant not found'));
+                return back()->with('error', 'Tenant not found');
             }
 
-            $data['tenant'] = $tenant;
-            $data = array_merge($data, $this->service->tenantCreateData($request)['data']);
+            $data['pageTitle'] = __('Edit Tenant');
+            $data['function_type'] = 'edit';
+            $data['item'] = $tenant;
 
             return ResponseService::send([
                 'data' => $data,
-            ], view: viewss('tenant', 'create'));
+            ], view: viewss('tenant', 'edit'));
         } catch (Throwable $e) {
-            return back()->with('error', __('Failed to load tenant: ' . $e->getMessage()));
+            return ResponseService::exception($e);
         }
     }
 
@@ -278,4 +304,80 @@ class TenantController extends Controller
             return back()->with('error', 'Delete failed: ' . $e->getMessage());
         }
     }
+
+    public function migrate(Request $request, $id)
+    {
+        try {
+            $reason = $request->input('reason');
+            $response = $this->service->migrateTenant((int) $id, $reason);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json($response, $response['status'] ?? 200);
+            }
+
+            return back()->with('success', $response['message'] ?? 'Migration completed');
+
+        } catch (Throwable $e) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Migration failed: ' . $e->getMessage(),
+                    'data' => [],
+                    'error_message' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()->with('error', 'Migration failed: ' . $e->getMessage());
+        }
+    }
+
+    public function migrateFresh(Request $request, $id)
+    {
+        try {
+            $reason = $request->input('reason');
+            $response = $this->service->migrateTenantFresh((int) $id, $reason);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json($response, $response['status'] ?? 200);
+            }
+
+            return back()->with('success', $response['message'] ?? 'Fresh migration completed');
+
+        } catch (Throwable $e) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Fresh migration failed: ' . $e->getMessage(),
+                    'data' => [],
+                    'error_message' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()->with('error', 'Fresh migration failed: ' . $e->getMessage());
+        }
+    }
+
+    public function logs(Request $request, $id)
+    {
+        try {
+            $tenant = $this->service->getTenant($id);
+
+            if (!$tenant) {
+                return back()->with('error', 'Tenant not found');
+            }
+
+            $response = $this->service->getTenantMigrationLogs((int) $id);
+
+            $data['pageTitle'] = __('Migration Logs for ' . $tenant->company_name);
+            $data['tenant'] = $tenant;
+            $data['logs'] = $response['data'] ?? [];
+
+            return ResponseService::send([
+                'data' => $data,
+            ], view: viewss('tenant', 'logs'));
+        } catch (Throwable $e) {
+            return back()->with('error', 'Failed to load migration logs: ' . $e->getMessage());
+        }
+    }
+
 }

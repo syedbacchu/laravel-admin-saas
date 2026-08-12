@@ -5,9 +5,10 @@ namespace App\Http\Services\Tenant;
 use App\Http\Requests\Tenant\TenantCreateRequest;
 use App\Http\Requests\Tenant\TenantUpdateRequest;
 use App\Http\Services\BaseService;
-use App\Models\User;
+use App\Http\Services\TenantMigrationLog\TenantMigrationLogServiceInterface;
+use App\Support\DataListManager;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class TenantService extends BaseService implements TenantServiceInterface
 {
@@ -15,13 +16,17 @@ class TenantService extends BaseService implements TenantServiceInterface
 
     protected TenantProvisionServiceInterface $tenantProvisionService;
 
+    protected TenantMigrationLogServiceInterface $migrationLogService;
+
     public function __construct(
         TenantRepositoryInterface $repository,
-        TenantProvisionServiceInterface $tenantProvisionService
+        TenantProvisionServiceInterface $tenantProvisionService,
+        TenantMigrationLogServiceInterface $migrationLogService
     ) {
         parent::__construct($repository);
         $this->tenantRepository = $repository;
         $this->tenantProvisionService = $tenantProvisionService;
+        $this->migrationLogService = $migrationLogService;
     }
 
     public function getDataTableData($request): array
@@ -39,57 +44,61 @@ class TenantService extends BaseService implements TenantServiceInterface
         return $this->tenantProvisionService->provision($request->validated());
     }
 
+    public function tenantCreateData($request): array
+    {
+        return $this->sendResponse(true, '', []);
+    }
+
     public function updateTenant(TenantUpdateRequest $request, $tenantId): array
     {
         try {
-            DB::beginTransaction();
-
             $tenant = $this->tenantRepository->find((int) $tenantId);
+
             if (!$tenant) {
                 return $this->sendResponse(false, __('Tenant not found'));
             }
 
-            // Update tenant information
-            $tenant->update([
-                'company_name' => $request->validated('company_name'),
-                'company_username' => $request->validated('company_username'),
-            ]);
+            $owner = $tenant->owner;
 
-            // Update owner user information
-            if ($tenant->owner) {
-                $ownerData = [
-                    'name' => $request->validated('owner_name'),
-                    'username' => $request->validated('company_username'),
-                    'email' => $request->validated('owner_email'),
-                    'phone' => $request->validated('owner_phone'),
-                ];
-
-                // Only update password if provided
-                if ($request->filled('owner_password')) {
-                    $ownerData['password'] = Hash::make($request->validated('owner_password'));
-                }
-
-                $tenant->owner->update($ownerData);
+            if (!$owner) {
+                return $this->sendResponse(false, __('Tenant owner not found'));
             }
 
-            DB::commit();
+            // Prepare update data
+            $updateData = [
+                'name' => $request->validated()['owner_name'],
+            ];
+
+            // Add email if provided
+            if ($request->has('owner_email') && $request->validated()['owner_email'] !== null) {
+                $updateData['email'] = $request->validated()['owner_email'];
+            }
+
+            // Add phone if provided
+            if ($request->has('owner_phone') && $request->validated()['owner_phone'] !== null) {
+                $updateData['phone'] = $request->validated()['owner_phone'];
+            }
+
+            // Add password if provided
+            if ($request->has('owner_password') && $request->validated()['owner_password'] !== null) {
+                $updateData['password'] = bcrypt($request->validated()['owner_password']);
+            }
+
+            // Update the owner user
+            $owner->update($updateData);
 
             return $this->sendResponse(true, __('Tenant updated successfully'), [
-                'tenant' => $tenant->load('owner'),
+                'tenant_id' => $tenant->id,
+                'company_name' => $tenant->company_name,
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
             logStore('TenantService updateTenant', $e->getMessage());
-            return $this->sendResponse(false, __('Failed to update tenant'), [
+            return $this->sendResponse(false, __('Something went wrong during tenant update'), [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
-    }
-
-    public function tenantCreateData($request): array
-    {
-        return $this->sendResponse(true, '', []);
     }
 
     public function getTenant($tenantId): mixed
@@ -300,21 +309,44 @@ class TenantService extends BaseService implements TenantServiceInterface
     {
         try {
             // Try to decrypt the password using the same method as the middleware
+            $password = null;
+            $useAdminCredentials = false;
+
             try {
                 $password = decrypt($tenantDatabase->db_password_encrypted);
             } catch (\Exception $decryptError) {
-                throw new \Exception('Password decryption failed. This typically occurs when the APP_KEY has changed. Error: ' . $decryptError->getMessage());
+                // If decryption fails, use admin database credentials as fallback
+                $useAdminCredentials = true;
+                logStore('configureTenantConnection', 'Password decryption failed for tenant ' . $tenantDatabase->db_name . ', using admin credentials');
             }
 
-            config([
-                'database.connections.tenant.host' => $tenantDatabase->db_host,
-                'database.connections.tenant.port' => $tenantDatabase->db_port,
-                'database.connections.tenant.database' => $tenantDatabase->db_name,
-                'database.connections.tenant.username' => $tenantDatabase->db_username,
-                'database.connections.tenant.password' => $password,
-                'database.connections.tenant.charset' => $tenantDatabase->db_charset ?: 'utf8mb4',
-                'database.connections.tenant.collation' => $tenantDatabase->db_collation ?: 'utf8mb4_unicode_ci',
-            ]);
+            if ($useAdminCredentials) {
+                // Use admin database credentials instead
+                $adminDbHost = env('TENANCY_DB_ADMIN_HOST', env('DB_HOST'));
+                $adminDbPort = env('TENANCY_DB_ADMIN_PORT', env('DB_PORT'));
+                $adminDbUser = env('TENANCY_DB_ADMIN_USERNAME', env('DB_USERNAME'));
+                $adminDbPass = env('TENANCY_DB_ADMIN_PASSWORD', env('DB_PASSWORD'));
+
+                config([
+                    'database.connections.tenant.host' => $adminDbHost,
+                    'database.connections.tenant.port' => $adminDbPort,
+                    'database.connections.tenant.database' => $tenantDatabase->db_name,
+                    'database.connections.tenant.username' => $adminDbUser,
+                    'database.connections.tenant.password' => $adminDbPass,
+                    'database.connections.tenant.charset' => (string) ($tenantDatabase->db_charset ?: config('tenancy.database_charset', 'utf8mb4')),
+                    'database.connections.tenant.collation' => (string) ($tenantDatabase->db_collation ?: config('tenancy.database_collation', 'utf8mb4_unicode_ci')),
+                ]);
+            } else {
+                config([
+                    'database.connections.tenant.host' => $tenantDatabase->db_host,
+                    'database.connections.tenant.port' => (int) $tenantDatabase->db_port,
+                    'database.connections.tenant.database' => $tenantDatabase->db_name,
+                    'database.connections.tenant.username' => $tenantDatabase->db_username,
+                    'database.connections.tenant.password' => $password,
+                    'database.connections.tenant.charset' => (string) ($tenantDatabase->db_charset ?: config('tenancy.database_charset', 'utf8mb4')),
+                    'database.connections.tenant.collation' => (string) ($tenantDatabase->db_collation ?: config('tenancy.database_collation', 'utf8mb4_unicode_ci')),
+                ]);
+            }
 
             DB::purge('tenant');
             $connection = DB::reconnect('tenant');
@@ -327,7 +359,7 @@ class TenantService extends BaseService implements TenantServiceInterface
                 throw new \Exception('Database connection test failed. The database server might not be accessible from this admin panel. Error: ' . $connectionError->getMessage());
             }
 
-            return ['success' => true, 'connection' => $connection];
+            return ['success' => true, 'connection' => $connection, 'used_admin_credentials' => $useAdminCredentials];
         } catch (\Exception $e) {
             throw $e;
         }
@@ -632,5 +664,170 @@ class TenantService extends BaseService implements TenantServiceInterface
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    public function migrateTenant(int $tenantId, string $reason = null): array
+    {
+        try {
+            $tenant = $this->tenantRepository->find($tenantId);
+
+            if (!$tenant) {
+                return $this->sendResponse(false, __('Tenant not found'));
+            }
+
+            if (!$tenant->database) {
+                return $this->sendResponse(false, __('Tenant database configuration not found'));
+            }
+
+            // Log migration start
+            $logId = $this->migrationLogService->logMigrationStart($tenantId, 'migrate', $reason);
+
+            try {
+                // Execute migration command
+                $exitCode = Artisan::call('tenant:migrate', [
+                    '--company_username' => $tenant->company_username,
+                ]);
+
+                $output = Artisan::output();
+
+                if ($exitCode === 0) {
+                    // Count migrations run from output
+                    $migrationsRun = $this->countMigrationsFromOutput($output);
+
+                    // Log successful completion
+                    $this->migrationLogService->logMigrationComplete($logId, $output, $migrationsRun);
+
+                    return $this->sendResponse(true, __('Migration completed successfully'), [
+                        'tenant_id' => $tenant->id,
+                        'company_name' => $tenant->company_name,
+                        'migrations_run' => $migrationsRun,
+                        'output' => $output,
+                        'log_id' => $logId
+                    ]);
+                } else {
+                    // Log failure
+                    $this->migrationLogService->logMigrationFailure($logId, 'Migration command failed with non-zero exit code', $output);
+
+                    return $this->sendResponse(false, __('Migration failed'), [
+                        'tenant_id' => $tenant->id,
+                        'company_name' => $tenant->company_name,
+                        'output' => $output,
+                        'log_id' => $logId
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Log exception
+                $this->migrationLogService->logMigrationFailure($logId, $e->getMessage(), null);
+
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            logStore('TenantService migrateTenant', $e->getMessage());
+            return $this->sendResponse(false, __('Migration failed: ') . $e->getMessage(), [], 500, $e->getMessage());
+        }
+    }
+
+    public function migrateTenantFresh(int $tenantId, string $reason = null): array
+    {
+        try {
+            $tenant = $this->tenantRepository->find($tenantId);
+
+            if (!$tenant) {
+                return $this->sendResponse(false, __('Tenant not found'));
+            }
+
+            if (!$tenant->database) {
+                return $this->sendResponse(false, __('Tenant database configuration not found'));
+            }
+
+            // Log migration start
+            $logId = $this->migrationLogService->logMigrationStart($tenantId, 'fresh', $reason);
+
+            try {
+                // Execute fresh migration command
+                $exitCode = Artisan::call('tenant:migrate:fresh', [
+                    '--company_username' => $tenant->company_username,
+                ]);
+
+                $output = Artisan::output();
+
+                if ($exitCode === 0) {
+                    // Count migrations run from output
+                    $migrationsRun = $this->countMigrationsFromOutput($output);
+
+                    // Log successful completion
+                    $this->migrationLogService->logMigrationComplete($logId, $output, $migrationsRun);
+
+                    return $this->sendResponse(true, __('Fresh migration completed successfully'), [
+                        'tenant_id' => $tenant->id,
+                        'company_name' => $tenant->company_name,
+                        'migrations_run' => $migrationsRun,
+                        'output' => $output,
+                        'log_id' => $logId,
+                        'warning' => 'All data was dropped and recreated'
+                    ]);
+                } else {
+                    // Log failure
+                    $this->migrationLogService->logMigrationFailure($logId, 'Fresh migration command failed with non-zero exit code', $output);
+
+                    return $this->sendResponse(false, __('Fresh migration failed'), [
+                        'tenant_id' => $tenant->id,
+                        'company_name' => $tenant->company_name,
+                        'output' => $output,
+                        'log_id' => $logId
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Log exception
+                $this->migrationLogService->logMigrationFailure($logId, $e->getMessage(), null);
+
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            logStore('TenantService migrateTenantFresh', $e->getMessage());
+            return $this->sendResponse(false, __('Fresh migration failed: ') . $e->getMessage(), [], 500, $e->getMessage());
+        }
+    }
+
+    public function getTenantMigrationLogs(int $tenantId): array
+    {
+        try {
+            $tenant = $this->tenantRepository->find($tenantId);
+
+            if (!$tenant) {
+                return $this->sendResponse(false, __('Tenant not found'));
+            }
+
+            return $this->migrationLogService->getTenantMigrationLogs($tenantId);
+
+        } catch (\Exception $e) {
+            logStore('TenantService getTenantMigrationLogs', $e->getMessage());
+            return $this->sendResponse(false, __('Failed to retrieve migration logs: ') . $e->getMessage(), [], 500, $e->getMessage());
+        }
+    }
+
+    protected function countMigrationsFromOutput(string $output): int
+    {
+        // Try to parse migration count from Artisan output
+        // Typical output: "Migrating: 2024_01_01_000000_create_users_table"
+        $count = 0;
+        $lines = explode("\n", $output);
+
+        foreach ($lines as $line) {
+            if (strpos($line, 'Migrating:') !== false || strpos($line, 'Running:') !== false) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+
+
+    public function configureTenantDatabaseConnection($tenantDatabase): array
+    {
+        return $this->configureTenantConnection($tenantDatabase);
     }
 }
