@@ -17,4 +17,14 @@ class SectionTranslation extends Model
     protected $casts = [
         'data' => 'array'
     ];
+
+    public function pageSection()
+    {
+        return $this->belongsTo(PageSection::class);
+    }
+
+    public function language()
+    {
+        return $this->belongsTo(Language::class);
+    }
 }

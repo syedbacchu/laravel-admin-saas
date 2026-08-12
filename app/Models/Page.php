@@ -20,4 +20,18 @@ class Page extends Model
         'created_by',
         'updated_by'
     ];
+
+    protected $casts = [
+        'status' => 'boolean',
+    ];
+
+    public function sections()
+    {
+        return $this->hasMany(PageSection::class)->orderBy('sort_order');
+    }
+
+    public function activeSections()
+    {
+        return $this->hasMany(PageSection::class)->where('is_visible', true)->orderBy('sort_order');
+    }
 }

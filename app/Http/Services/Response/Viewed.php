@@ -135,6 +135,21 @@ class Viewed
             'field_show' => 'admin.component.field_show',
             'show' => 'admin.component.show',
         ],
+        'page' => [
+            'list' => 'admin.page.list',
+            'create' => 'admin.page.create',
+            'edit' => 'admin.page.edit',
+            'show' => 'admin.page.show',
+            'sections' => 'admin.page-section.list',
+        ],
+        'page-section' => [
+            'create' => 'admin.page-section.create',
+        ],
+        'section-translation' => [
+            'list' => 'admin.section-translation.list',
+            'create' => 'admin.section-translation.create',
+            'edit-content' => 'admin.section-translation.edit-content',
+        ],
     ];
 
     /**

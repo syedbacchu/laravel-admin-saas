@@ -34,6 +34,9 @@ use App\Http\Controllers\Admin\Testimonial\TestimonialController;
 use App\Http\Controllers\Admin\Contact\ContactController;
 use App\Http\Controllers\Admin\Component\ComponentController;
 use App\Http\Controllers\Admin\Component\ComponentFieldController;
+use App\Http\Controllers\Admin\Page\PageController;
+use App\Http\Controllers\Admin\Page\PageSectionController;
+use App\Http\Controllers\Admin\Page\SectionTranslationController;
 
 Route::get('log', [Sdtech\LogViewerLaravel\Controllers\LogViewerLaravelController::class, 'index'])->name('errorLog');
 
@@ -482,5 +485,43 @@ Route::group(['prefix' => 'components', 'as' => 'component.'], function () {
         Route::get('/field-delete/{field}', [ComponentFieldController::class, 'destroy'])->name('delete');
         Route::post('update-sort-order', [ComponentFieldController::class, 'updateSortOrder'])->name('updateSortOrder');
         Route::get('children/{parentId}', [ComponentFieldController::class, 'getChildren'])->name('children');
+    });
+});
+
+// Page Builder Management
+Route::group(['prefix' => 'pages', 'as' => 'pages.'], function () {
+    // Pages
+    Route::get('/', [PageController::class, 'index'])->name('index');
+    Route::get('/create', [PageController::class, 'create'])->name('create');
+    Route::post('/', [PageController::class, 'store'])->name('store');
+    Route::post('/toggle-status', [PageController::class, 'toggleStatus'])->name('toggleStatus');
+    Route::get('/{id}', [PageController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [PageController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [PageController::class, 'update'])->name('update');
+    Route::get('/delete/{id}', [PageController::class, 'destroy'])->name('delete');
+
+    // Page Sections and Translations
+    Route::group(['prefix' => '{pageId}'], function () {
+        // Page Sections (this is now handled in PageController->sections method)
+        Route::get('/sections', [PageController::class, 'sections'])->name('sections.index');
+        Route::get('/sections/create', [PageSectionController::class, 'create'])->name('sections.create');
+        Route::post('/sections', [PageSectionController::class, 'store'])->name('sections.store');
+        Route::post('/sections/toggle-status', [PageSectionController::class, 'toggleStatus'])->name('sections.toggleStatus');
+        Route::post('/sections/update-sort-order', [PageSectionController::class, 'updateSortOrder'])->name('sections.updateSortOrder');
+        Route::get('/sections/{id}/edit', [PageSectionController::class, 'edit'])->name('sections.edit');
+        Route::put('/sections/{id}', [PageSectionController::class, 'update'])->name('sections.update');
+        Route::get('/sections/delete/{sectionId}', [PageSectionController::class, 'destroy'])->name('sections.delete');
+
+        // Section Translations
+        Route::group(['prefix' => 'sections/{sectionId}'], function () {
+            Route::get('/translations', [SectionTranslationController::class, 'index'])->name('sections.translations.index');
+            Route::get('/translations/create', [SectionTranslationController::class, 'create'])->name('sections.translations.create');
+            Route::post('/translations', [SectionTranslationController::class, 'store'])->name('sections.translations.store');
+            Route::get('/translations/edit-content', [SectionTranslationController::class, 'editContent'])->name('sections.translations.edit-content');
+            Route::post('/translations/update-content', [SectionTranslationController::class, 'updateContent'])->name('sections.translations.update-content');
+            Route::get('/translations/{id}/edit', [SectionTranslationController::class, 'edit'])->name('sections.translations.edit');
+            Route::put('/translations/{id}', [SectionTranslationController::class, 'update'])->name('sections.translations.update');
+            Route::delete('/translations/{id}', [SectionTranslationController::class, 'destroy'])->name('sections.translations.delete');
+        });
     });
 });

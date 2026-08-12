@@ -18,6 +18,18 @@ use App\Http\Services\ComponentField\ComponentFieldRepository;
 use App\Http\Services\ComponentField\ComponentFieldRepositoryInterface;
 use App\Http\Services\ComponentField\ComponentFieldService;
 use App\Http\Services\ComponentField\ComponentFieldServiceInterface;
+use App\Http\Services\Page\PageRepository;
+use App\Http\Services\Page\PageRepositoryInterface;
+use App\Http\Services\Page\PageService;
+use App\Http\Services\Page\PageServiceInterface;
+use App\Http\Services\PageSection\PageSectionRepository;
+use App\Http\Services\PageSection\PageSectionRepositoryInterface;
+use App\Http\Services\PageSection\PageSectionService;
+use App\Http\Services\PageSection\PageSectionServiceInterface;
+use App\Http\Services\SectionTranslation\SectionTranslationRepository;
+use App\Http\Services\SectionTranslation\SectionTranslationRepositoryInterface;
+use App\Http\Services\SectionTranslation\SectionTranslationService;
+use App\Http\Services\SectionTranslation\SectionTranslationServiceInterface;
 use App\Http\Services\CustomField\CustomFieldRepository;
 use App\Http\Services\CustomField\CustomFieldRepositoryInterface;
 use App\Http\Services\CustomField\CustomFieldService;
@@ -334,6 +346,16 @@ class ServiceLayerProvider extends ServiceProvider
 
         $this->app->bind(ComponentFieldRepositoryInterface::class, ComponentFieldRepository::class);
         $this->app->bind(ComponentFieldServiceInterface::class, ComponentFieldService::class);
+
+        // Page Builder Services
+        $this->app->bind(PageRepositoryInterface::class, PageRepository::class);
+        $this->app->bind(PageServiceInterface::class, PageService::class);
+
+        $this->app->bind(PageSectionRepositoryInterface::class, PageSectionRepository::class);
+        $this->app->bind(PageSectionServiceInterface::class, PageSectionService::class);
+
+        $this->app->bind(SectionTranslationRepositoryInterface::class, SectionTranslationRepository::class);
+        $this->app->bind(SectionTranslationServiceInterface::class, SectionTranslationService::class);
     }
 
     /**

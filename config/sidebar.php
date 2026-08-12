@@ -226,21 +226,13 @@ return [
                 'route' => 'component.list',
                 'permission' => 'component.list',
             ],
+
             [
-                'label' => 'Create Component',
-                'route' => 'component.create',
-                'permission' => 'component.create',
+                'label' => 'Pages',
+                'route' => 'pages.index',
+                'permission' => 'pages.index',
             ],
-//            [
-//                'label' => 'Pages',
-//                'route' => 'page.list',
-//                'permission' => 'page.list',
-//            ],
-//            [
-//                'label' => 'Create Page',
-//                'route' => 'page.create',
-//                'permission' => 'page.create',
-//            ],
+
         ],
     ],
     [
