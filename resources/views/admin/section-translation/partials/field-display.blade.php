@@ -3,7 +3,7 @@
     $isRequired = $field['is_required'] ? 'required' : '';
     $inputName = 'data[' . $field['input_name'] . ']';
 @endphp
-{{json_encode($field)}}
+
 <div class="bg-white border border-gray-200 rounded-lg p-4">
     <div class="mb-3">
         <label class="block text-base font-semibold text-gray-800">
