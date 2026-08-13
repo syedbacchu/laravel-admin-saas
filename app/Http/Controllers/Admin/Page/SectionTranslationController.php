@@ -28,63 +28,12 @@ class SectionTranslationController extends Controller
         return view(viewss('section-translation', 'list'), $response['data']);
     }
 
-    public function create(Request $request, string $pageId, string $sectionId)
-    {
-        $response = $this->translationService->getCreateTranslationData((int)$pageId, (int)$sectionId);
-        if (!$response) {
-            return ResponseService::send();
-        }
-
-        return view(viewss('section-translation', 'create'), $response['data']);
-    }
-
-    public function store(Request $request, string $pageId, string $sectionId): RedirectResponse
-    {
-        $request->merge(['page_section_id' => $sectionId]);
-        $response = $this->translationService->storeOrUpdateTranslation($request, (int)$sectionId);
-        return ResponseService::send([
-            'response' => $response,
-        ], null, null, ['pageId' => $pageId, 'sectionId' => $sectionId], 'pages.sections.translations.index');
-    }
-
-    public function edit(Request $request, string $pageId, string $sectionId, string $id)
-    {
-        $response = $this->translationService->getEditTranslationData((int)$pageId, (int)$sectionId, (int)$id);
-        if (!$response) {
-            return ResponseService::send();
-        }
-
-        return view(viewss('section-translation', 'create'), $response['data']);
-    }
-
-    public function update(Request $request, string $pageId, string $sectionId, string $id): RedirectResponse
-    {
-        $request->merge(['edit_id' => $id]);
-        $response = $this->translationService->storeOrUpdateTranslation($request, (int)$sectionId);
-
-        return ResponseService::send([
-            'response' => $response,
-        ], null, null, ['pageId' => $pageId, 'sectionId' => $sectionId], 'pages.sections.translations.index');
-    }
-
     public function destroy(string $pageId, string $sectionId, string $id): RedirectResponse
     {
         $response = $this->translationService->deleteTranslation((int)$id);
         return ResponseService::send([
             'response' => $response,
         ], null, null, ['pageId' => $pageId, 'sectionId' => $sectionId], 'pages.sections.translations.index');
-    }
-
-    public function editContent(Request $request, string $pageId, string $sectionId)
-    {
-        $languageId = $request->input('language_id', default_language_id());
-        $response = $this->translationService->getEditContentData((int)$pageId, (int)$sectionId, (int)$languageId);
-
-        if (!$response) {
-            return ResponseService::send();
-        }
-
-        return view(viewss('section-translation', 'edit-content'), $response['data']);
     }
 
     public function updateContent(Request $request, string $pageId, string $sectionId): RedirectResponse
@@ -186,7 +135,7 @@ class SectionTranslationController extends Controller
         if (!$response) {
             return ResponseService::send();
         }
-//dd($response);
+
         return view(viewss('section-translation', 'tabbed-edit'), $response['data']);
     }
 }
