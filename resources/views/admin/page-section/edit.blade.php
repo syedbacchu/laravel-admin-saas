@@ -21,7 +21,7 @@
                             <option value="">{{ __('Select a component') }}</option>
                             @foreach($components as $component)
                                 <option value="{{ $component->id }}" {{ old('component_id', $section->component_id) == $component->id ? 'selected' : '' }}>
-                                    {{ $component->title }}
+                                    {{ $component->name }}
                                 </option>
                             @endforeach
                         </select>

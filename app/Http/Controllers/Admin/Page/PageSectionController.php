@@ -33,7 +33,7 @@ class PageSectionController extends Controller
         $data['pageTitle'] = __('Add Section to: ') . $page->name;
         $data['function_type'] = 'create';
         $data['page'] = $page;
-        $data['components'] = Component::active()->get();
+        $data['components'] = Component::orderBy('id','desc')->get();
 
         return view(viewss('page-section', 'create'), $data);
     }
