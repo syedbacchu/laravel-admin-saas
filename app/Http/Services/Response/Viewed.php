@@ -144,6 +144,8 @@ class Viewed
         ],
         'page-section' => [
             'create' => 'admin.page-section.create',
+            'edit' => 'admin.page-section.edit',
+            'list' => 'admin.page-section.list',
         ],
         'section-translation' => [
             'list' => 'admin.section-translation.list',

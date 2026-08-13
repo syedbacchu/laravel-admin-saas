@@ -60,15 +60,14 @@ class PageSectionController extends Controller
         }
 
         $page = $pageResponse;
-        $section = $sectionResponse;
 
         $data['pageTitle'] = __('Update Section');
         $data['function_type'] = 'update';
         $data['page'] = $page;
-        $data['item'] = $section;
+        $data['section'] = $sectionResponse;
         $data['components'] = Component::orderBy('id','desc')->get();
 
-        return view(viewss('page-section', 'create'), $data);
+        return view(viewss('page-section', 'edit'), $data);
     }
 
     public function update(Request $request, string $pageId, string $id): RedirectResponse

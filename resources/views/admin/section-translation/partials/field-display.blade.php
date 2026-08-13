@@ -3,7 +3,7 @@
     $isRequired = $field['is_required'] ? 'required' : '';
     $inputName = 'data[' . $field['input_name'] . ']';
 @endphp
-
+{{json_encode($field)}}
 <div class="bg-white border border-gray-200 rounded-lg p-4">
     <div class="mb-3">
         <label class="block text-base font-semibold text-gray-800">
@@ -145,14 +145,16 @@
                 @break
 
             @case('image')
-                <x-common.file-manager-upload
-                    name="{{ $inputName }}"
-                    :value="$field['value'] ?? ''"
-                    label="{{ $field['label'] }}"
-                    :required="$field['is_required']"
-                    width="400"
-                    height="300"
-                />
+                <div class="max-w-[220px]">
+                    <x-common.file-manager-upload
+                        name="{{ $inputName }}"
+                        :value="$field['value'] ?? ''"
+                        label="{{ $field['label'] }}"
+                        :required="$field['is_required']"
+                        width="200"
+                        height="120"
+                    />
+                </div>
                 @break
 
             @case('file')
@@ -165,30 +167,46 @@
                 @break
 
             @case('responsive_image')
-                <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    {{-- Desktop Image --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Desktop Image</label>
-                        <x-common.file-manager-upload
-                            name="data[{{ $field['input_name'] }}][desktop]"
-                            :value="$field['desktop_value'] ?? ''"
-                            label="Desktop"
-                            :required="$field['is_required']"
-                            width="400"
-                            height="300"
-                        />
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Desktop Image
+                        </label>
+
+                        <div class="max-w-[180px]">
+                            <x-common.file-manager-upload
+                                name="data[{{ $field['input_name'] }}][desktop]"
+                                :value="$field['value']['desktop'] ?? ''"
+                                label="Desktop"
+                                :required="$field['is_required']"
+                                width="200"
+                                height="120"
+                            />
+                        </div>
                     </div>
+
+                    {{-- Mobile Image --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Image</label>
-                        <x-common.file-manager-upload
-                            name="data[{{ $field['input_name'] }}][mobile]"
-                            :value="$field['mobile_value'] ?? ''"
-                            label="Mobile"
-                            :required="$field['is_required']"
-                            width="400"
-                            height="300"
-                        />
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Mobile Image
+                        </label>
+
+                        <div class="max-w-[180px]">
+                            <x-common.file-manager-upload
+                                name="data[{{ $field['input_name'] }}][mobile]"
+                                :value="$field['value']['mobile'] ?? ''"
+                                label="Mobile"
+                                :required="$field['is_required']"
+                                width="120"
+                                height="160"
+                            />
+                        </div>
                     </div>
+
                 </div>
+
                 @break
 
             @case('repeater')
