@@ -515,10 +515,12 @@ Route::group(['prefix' => 'pages', 'as' => 'pages.'], function () {
         // Section Translations
         Route::group(['prefix' => 'sections/{sectionId}'], function () {
             Route::get('/translations', [SectionTranslationController::class, 'index'])->name('sections.translations.index');
+            Route::get('/translations/tabbed', [SectionTranslationController::class, 'tabbedEdit'])->name('sections.translations.tabbed');
             Route::get('/translations/create', [SectionTranslationController::class, 'create'])->name('sections.translations.create');
             Route::post('/translations', [SectionTranslationController::class, 'store'])->name('sections.translations.store');
             Route::get('/translations/edit-content', [SectionTranslationController::class, 'editContent'])->name('sections.translations.edit-content');
             Route::post('/translations/update-content', [SectionTranslationController::class, 'updateContent'])->name('sections.translations.update-content');
+            Route::get('/translations/default-language-content', [SectionTranslationController::class, 'getDefaultLanguageContent'])->name('sections.translations.default-language-content');
             Route::get('/translations/{id}/edit', [SectionTranslationController::class, 'edit'])->name('sections.translations.edit');
             Route::put('/translations/{id}', [SectionTranslationController::class, 'update'])->name('sections.translations.update');
             Route::delete('/translations/{id}', [SectionTranslationController::class, 'destroy'])->name('sections.translations.delete');

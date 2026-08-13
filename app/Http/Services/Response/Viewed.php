@@ -149,6 +149,7 @@ class Viewed
             'list' => 'admin.section-translation.list',
             'create' => 'admin.section-translation.create',
             'edit-content' => 'admin.section-translation.edit-content',
+            'tabbed-edit' => 'admin.section-translation.tabbed-edit',
         ],
     ];
 

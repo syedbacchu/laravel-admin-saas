@@ -174,7 +174,7 @@ class PageController extends Controller
 
                     'actions' => function ($item) use ($pageId) {
                         $buttons = [
-                            translation_button(route('pages.sections.translations.index', ['pageId' => $pageId, 'sectionId' => $item->id])),
+                            translation_button(route('pages.sections.translations.tabbed', ['pageId' => $pageId, 'sectionId' => $item->id])),
                             edit_column(route('pages.sections.edit', ['pageId' => $pageId, 'id' => $item->id])),
                             delete_column(route('pages.sections.delete', ['pageId' => $pageId, 'sectionId' => $item->id])),
                         ];
