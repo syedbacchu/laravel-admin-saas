@@ -43,7 +43,7 @@ class SectionTranslationController extends Controller
 
         // Clean up new items in repeaters
         $contentData = $this->cleanRepeaterData($contentData);
-
+//dd($request->all());
         $response = $this->translationService->saveTranslationContent((int)$sectionId, (int)$languageId, $contentData);
 
         return ResponseService::send([

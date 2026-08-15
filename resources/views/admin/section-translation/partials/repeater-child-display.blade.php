@@ -139,15 +139,95 @@
             @break
 
         @case('image')
-            <div>
-                <input type="text"
+            @php
+                $fieldId = 'repeater_image_' . $parentFieldName . '_' . $childField['name'];
+                $existingValue = $childField['value'] ?? '';
+            @endphp
+
+            <div x-data="{
+                fileUrl: items[index]['{{ $childField['name'] }}'] || '',
+                filePreview: items[index]['{{ $childField['name'] }}'] || '',
+                get callbackName() {
+                    return '{{ $fieldId }}_' + index;
+                },
+                init() {
+                    this.$nextTick(() => {
+                        const handler = (e) => {
+                            this.fileUrl = e.detail.url;
+                            this.filePreview = e.detail.url;
+                        };
+                        window.addEventListener(this.callbackName, handler);
+                        this._cleanup = () => window.removeEventListener(this.callbackName, handler);
+                    });
+                },
+                destroy() {
+                    if (this._cleanup) this._cleanup();
+                }
+            }">
+                {{-- Hidden input bound to repeater data --}}
+                <input type="hidden"
                        :name="'data[{{ $parentFieldName }}][' + index + '][{{ $childField['name'] }}]'"
                        x-model="items[index]['{{ $childField['name'] }}']"
-                       placeholder="https://example.com/image.jpg"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                        {{ $isRequired }}>
-                <div x-show="items[index]['{{ $childField['name'] }}']" class="mt-2">
-                    <img :src="items[index]['{{ $childField['name'] }}']" alt="{{ $childField['label'] }}" class="h-20 w-auto rounded border border-gray-200" onerror="this.style.display='none'">
+
+                <div class="space-y-2">
+                    @if($childField['label'])
+                    <label class="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        @if($childField['is_required'])
+                        <span class="text-red-500">*</span>
+                        @endif
+                        {{ __($childField['label']) }}
+                    </label>
+                    @endif
+
+                    {{-- Upload/Preview Area --}}
+                    <div class="file-upload-container">
+                        <div class="relative group file-upload-box"
+                             @click="$dispatch('open-file-manager', { callback: callbackName })">
+
+                            <div class="upload-content w-full aspect-[4/3]">
+                                {{-- Image Preview --}}
+                                <template x-if="filePreview">
+                                    <div class="w-full h-full rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all duration-300 relative">
+                                        <img :src="filePreview"
+                                             class="w-full h-full object-cover">
+
+                                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                            <div class="text-center text-white">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <span class="text-sm font-medium">Change Image</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                {{-- No Image State --}}
+                                <template x-if="!filePreview">
+                                    <div class="w-full h-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 flex flex-col items-center justify-center p-6">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-gray-400 dark:text-gray-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">No image selected</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Click to choose</p>
+                                    </div>
+                                </template>
+
+                                {{-- Remove Button --}}
+                                <template x-if="filePreview">
+                                    <button type="button"
+                                            @click.stop="items[index]['{{ $childField['name'] }}'] = ''; filePreview = '';"
+                                            class="absolute -top-2 -right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 z-10"
+                                            title="Remove image">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             @break
@@ -162,29 +242,155 @@
             @break
 
         @case('responsive_image')
-            <div class="space-y-2">
-                <div>
-                    <label class="text-xs text-gray-600">Desktop Image</label>
-                    <input type="text"
+            @php
+                $desktopFieldId = 'resp_desktop_' . $parentFieldName . '_' . $childField['name'];
+                $mobileFieldId = 'resp_mobile_' . $parentFieldName . '_' . $childField['name'];
+            @endphp
+
+            <div class="space-y-4">
+                {{-- Desktop Image --}}
+                <div x-data="{
+                    fileUrl: items[index]['{{ $childField['name'] }}']['desktop'] || '',
+                    filePreview: items[index]['{{ $childField['name'] }}']['desktop'] || '',
+                    get callbackName() {
+                        return '{{ $desktopFieldId }}_' + index;
+                    },
+                    init() {
+                        this.$nextTick(() => {
+                            const handler = (e) => {
+                                this.fileUrl = e.detail.url;
+                                this.filePreview = e.detail.url;
+                            };
+                            window.addEventListener(this.callbackName, handler);
+                            this._cleanup = () => window.removeEventListener(this.callbackName, handler);
+                        });
+                    },
+                    destroy() {
+                        if (this._cleanup) this._cleanup();
+                    }
+                }">
+                    {{-- Hidden input --}}
+                    <input type="hidden"
                            :name="'data[{{ $parentFieldName }}][' + index + '][{{ $childField['name'] }}][desktop]'"
                            x-model="items[index]['{{ $childField['name'] }}']['desktop']"
-                           placeholder="Desktop image URL"
-                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                            {{ $isRequired }}>
-                    <div x-show="items[index]['{{ $childField['name'] }}']['desktop']" class="mt-1">
-                        <img :src="items[index]['{{ $childField['name'] }}']['desktop']" alt="Desktop" class="h-16 w-auto rounded border border-gray-200" onerror="this.style.display='none'">
+
+                    <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 block">Desktop Image</label>
+
+                    <div class="file-upload-container">
+                        <div class="relative group file-upload-box"
+                             @click="$dispatch('open-file-manager', { callback: callbackName })">
+
+                            <div class="upload-content w-full aspect-[4/3]">
+                                <template x-if="filePreview">
+                                    <div class="w-full h-full rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all duration-300 relative">
+                                        <img :src="filePreview" class="w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                            <div class="text-center text-white">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <span class="text-sm font-medium">Change Image</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <template x-if="!filePreview">
+                                    <div class="w-full h-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 flex flex-col items-center justify-center p-6">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-gray-400 dark:text-gray-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">No image selected</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Click to choose</p>
+                                    </div>
+                                </template>
+
+                                <template x-if="filePreview">
+                                    <button type="button"
+                                            @click.stop="items[index]['{{ $childField['name'] }}']['desktop'] = ''; filePreview = '';"
+                                            class="absolute -top-2 -right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 z-10"
+                                            title="Remove image">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <label class="text-xs text-gray-600">Mobile Image</label>
-                    <input type="text"
+
+                {{-- Mobile Image --}}
+                <div x-data="{
+                    fileUrl: items[index]['{{ $childField['name'] }}']['mobile'] || '',
+                    filePreview: items[index]['{{ $childField['name'] }}']['mobile'] || '',
+                    get callbackName() {
+                        return '{{ $mobileFieldId }}_' + index;
+                    },
+                    init() {
+                        this.$nextTick(() => {
+                            const handler = (e) => {
+                                this.fileUrl = e.detail.url;
+                                this.filePreview = e.detail.url;
+                            };
+                            window.addEventListener(this.callbackName, handler);
+                            this._cleanup = () => window.removeEventListener(this.callbackName, handler);
+                        });
+                    },
+                    destroy() {
+                        if (this._cleanup) this._cleanup();
+                    }
+                }">
+                    {{-- Hidden input --}}
+                    <input type="hidden"
                            :name="'data[{{ $parentFieldName }}][' + index + '][{{ $childField['name'] }}][mobile]'"
                            x-model="items[index]['{{ $childField['name'] }}']['mobile']"
-                           placeholder="Mobile image URL"
-                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                            {{ $isRequired }}>
-                    <div x-show="items[index]['{{ $childField['name'] }}']['mobile']" class="mt-1">
-                        <img :src="items[index]['{{ $childField['name'] }}']['mobile']" alt="Mobile" class="h-16 w-auto rounded border border-gray-200" onerror="this.style.display='none'">
+
+                    <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 block">Mobile Image</label>
+
+                    <div class="file-upload-container">
+                        <div class="relative group file-upload-box"
+                             @click="$dispatch('open-file-manager', { callback: callbackName })">
+
+                            <div class="upload-content w-full aspect-[4/3]">
+                                <template x-if="filePreview">
+                                    <div class="w-full h-full rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all duration-300 relative">
+                                        <img :src="filePreview" class="w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                            <div class="text-center text-white">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <span class="text-sm font-medium">Change Image</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <template x-if="!filePreview">
+                                    <div class="w-full h-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 flex flex-col items-center justify-center p-6">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-gray-400 dark:text-gray-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">No image selected</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Click to choose</p>
+                                    </div>
+                                </template>
+
+                                <template x-if="filePreview">
+                                    <button type="button"
+                                            @click.stop="items[index]['{{ $childField['name'] }}']['mobile'] = ''; filePreview = '';"
+                                            class="absolute -top-2 -right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 z-10"
+                                            title="Remove image">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
