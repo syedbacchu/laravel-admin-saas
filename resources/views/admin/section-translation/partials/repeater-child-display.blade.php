@@ -155,6 +155,7 @@
                         const handler = (e) => {
                             this.fileUrl = e.detail.url;
                             this.filePreview = e.detail.url;
+                            items[index]['{{ $childField['name'] }}'] = e.detail.url;
                         };
                         window.addEventListener(this.callbackName, handler);
                         this._cleanup = () => window.removeEventListener(this.callbackName, handler);
@@ -260,6 +261,7 @@
                             const handler = (e) => {
                                 this.fileUrl = e.detail.url;
                                 this.filePreview = e.detail.url;
+                                items[index]['{{ $childField['name'] }}']['desktop'] = e.detail.url;
                             };
                             window.addEventListener(this.callbackName, handler);
                             this._cleanup = () => window.removeEventListener(this.callbackName, handler);
@@ -333,6 +335,7 @@
                             const handler = (e) => {
                                 this.fileUrl = e.detail.url;
                                 this.filePreview = e.detail.url;
+                                items[index]['{{ $childField['name'] }}']['mobile'] = e.detail.url;
                             };
                             window.addEventListener(this.callbackName, handler);
                             this._cleanup = () => window.removeEventListener(this.callbackName, handler);
