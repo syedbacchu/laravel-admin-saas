@@ -2,7 +2,9 @@
 
 namespace App\Http\Services\Page;
 
+use App\Enums\StatusEnum;
 use App\Http\Services\BaseService;
+use App\Models\Language;
 use App\Models\Page;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -170,5 +172,132 @@ class PageService extends BaseService implements PageServiceInterface
             ],
             'sections' => $content,
         ];
+    }
+
+    public function getPublicPageBySlug(string $slug, ?string $languageCode = null): array
+    {
+        try {
+            // Get language from code or use default
+            $language = null;
+
+            if ($languageCode) {
+                $language = Language::where('code', $languageCode)
+                    ->where('status', 1)
+                    ->first();
+            }
+
+            // If no specific language requested or not found, use default
+            if (!$language) {
+                $language = Language::where('is_default', 1)
+                    ->where('status', 1)
+                    ->first();
+            }
+
+            // If still no language, return error
+            if (!$language) {
+                return $this->sendResponse(
+                    false,
+                    'No active language found',
+                    [],
+                    404,
+                    'Language configuration error'
+                );
+            }
+
+            // Find page with sections
+            $page = $this->pageRepository->findPageWithSectionsBySlug($slug, $language->id);
+
+            // If page not found
+            if (!$page) {
+                return $this->sendResponse(
+                    false,
+                    'Page not found',
+                    [],
+                    404,
+                    'The requested page does not exist or is not active'
+                );
+            }
+
+            // Format the response data
+            $formattedData = $this->formatPageData($page, $language);
+
+            return $this->sendResponse(
+                true,
+                'Page data retrieved successfully',
+                $formattedData,
+                200,
+                ''
+            );
+
+        } catch (\Exception $e) {
+            return $this->sendResponse(
+                false,
+                'Something went wrong',
+                [],
+                500,
+                $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Format page data for API response
+     *
+     * @param \App\Models\Page $page
+     * @param \App\Models\Language $language
+     * @return array
+     */
+    private function formatPageData($page, $language): array
+    {
+        $sections = [];
+
+        foreach ($page->activeSections as $section) {
+            $sectionData = [
+                'id' => $section->id,
+                'component_id' => $section->component_id,
+                'component_name' => $section->component->name ?? null,
+                'component_identifier' => $section->component->identifier ?? null,
+                'sort_order' => $section->sort_order,
+                'is_visible' => $section->is_visible,
+                'content' => []
+            ];
+
+            // Get translation data if exists
+            $translation = $section->translations->first();
+            if ($translation && !empty($translation->data)) {
+                $sectionData['content'] = $translation->data;
+            }
+
+            $sections[] = $sectionData;
+        }
+
+        return [
+            'page' => [
+                'id' => $page->id,
+                'name' => $page->name,
+                'slug' => $page->slug,
+                'meta_title' => $page->meta_title,
+                'meta_description' => $page->meta_description,
+                'meta_keywords' => $page->meta_keyword,
+                'meta_image' => $page->meta_image,
+                'status' => $page->status,
+            ],
+            'language' => $language->code,
+            'sections' => $sections
+        ];
+    }
+
+    public function getPublicPagesList(Request $request): array
+    {
+        $request->merge(['status' => enum(StatusEnum::ACTIVE)]);
+        $pages = $this->pageRepository->pageList($request);
+
+        return $this->sendResponse(
+            true,
+            'Pages list retrieved successfully',
+            $pages,
+            200,
+            ''
+        );
     }
 }

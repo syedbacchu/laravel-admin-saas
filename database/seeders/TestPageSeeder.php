@@ -163,7 +163,7 @@ class TestPageSeeder extends Seeder
         return match ($component) {
 
             'slider' => [
-                'slides' => [
+                'items' => [
                     [
                         'image' => [
                             'desktop' => '',

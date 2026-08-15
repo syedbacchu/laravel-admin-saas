@@ -2,6 +2,7 @@
 
 namespace App\Http\Services\Page;
 
+use App\Enums\StatusEnum;
 use App\Http\Repositories\BaseRepository;
 use App\Models\Page;
 use App\Support\DataListManager;
@@ -81,5 +82,15 @@ class PageRepository extends BaseRepository implements PageRepositoryInterface
     public function getPagesWithComponents(): Collection
     {
         return Page::with(['sections.component', 'sections.translations'])->orderBy('name')->get();
+    }
+
+    public function findPageWithSectionsBySlug(string $slug, int $languageId)
+    {
+        return Page::where('slug', $slug)
+            ->where('status', enum(StatusEnum::ACTIVE))
+            ->with(['activeSections.component', 'activeSections.translations' => function ($query) use ($languageId) {
+                $query->where('language_id', $languageId);
+            }])
+            ->first();
     }
 }

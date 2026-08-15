@@ -18,4 +18,7 @@ interface PageServiceInterface extends BaseServiceInterface
     public function findBySlug(string $slug): ?Model;
     public function getPagesWithComponents(): Collection;
     public function getPageContent(string $slug, string $languageCode = null): array;
+
+    public function getPublicPageBySlug(string $slug, ?string $languageCode = null): array;
+    public function getPublicPagesList(Request $request): array;
 }

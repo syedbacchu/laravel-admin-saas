@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\Testimonials\TestimonialsController;
 use App\Http\Controllers\Api\Subscriber\SubscriberController;
 use App\Http\Controllers\Api\Contact\ContactController;
 use App\Http\Controllers\Api\Slider\SliderController;
+use App\Http\Controllers\Api\DynamicPageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,10 +34,18 @@ use App\Http\Controllers\Api\Slider\SliderController;
 |
 */
 
+
+
 Route::group(['middleware' => ['api.protection']], function () {
 
     Route::group(['prefix' => 'test', 'as' => 'apiTest.'], function () {
         Route::get('connection', [TestController::class, 'index'])->name('test');
+    });
+
+    // Public Dynamic Page API
+    Route::group(['prefix' => 'dynamic-page', 'as' => 'apiDynamicPage.'], function () {
+        Route::get('/', [DynamicPageController::class, 'index'])->name('list');
+        Route::get('{slug}', [DynamicPageController::class, 'show'])->name('show');
     });
 
     Route::group(['prefix' => 'blogs', 'as' => 'apiBlog.'], function () {

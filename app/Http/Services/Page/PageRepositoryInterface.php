@@ -15,4 +15,6 @@ interface PageRepositoryInterface extends BaseRepositoryInterface
     public function getPagesWithSections(): Collection;
     public function updateStatus(int $id, bool $status): bool;
     public function getPagesWithComponents(): Collection;
+
+    public function findPageWithSectionsBySlug(string $slug, int $languageId);
 }
