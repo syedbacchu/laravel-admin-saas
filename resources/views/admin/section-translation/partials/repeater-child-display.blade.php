@@ -143,7 +143,7 @@
                 $fieldId = 'repeater_image_' . $parentFieldName . '_' . $childField['name'];
                 $existingValue = $childField['value'] ?? '';
             @endphp
-
+            <div class="grid grid-cols-2 gap-4">
             <div x-data="{
                 fileUrl: items[index]['{{ $childField['name'] }}'] || '',
                 filePreview: items[index]['{{ $childField['name'] }}'] || '',
@@ -171,18 +171,11 @@
                        x-model="items[index]['{{ $childField['name'] }}']"
                        {{ $isRequired }}>
 
-                <div class="space-y-2">
-                    @if($childField['label'])
-                    <label class="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        @if($childField['is_required'])
-                        <span class="text-red-500">*</span>
-                        @endif
-                        {{ __($childField['label']) }}
-                    </label>
-                    @endif
+                <div class="file-upload-container max-w-[200px]">
+                    <div class="relative group file-upload-box"
+                         @click="$dispatch('open-file-manager', { callback: callbackName })">
 
-                    {{-- Upload/Preview Area --}}
-                    <div class="file-upload-container">
+                        <div class="upload-content w-full aspect-[4/3]">
                         <div class="relative group file-upload-box"
                              @click="$dispatch('open-file-manager', { callback: callbackName })">
 
@@ -231,6 +224,7 @@
                     </div>
                 </div>
             </div>
+            </div>
             @break
 
         @case('file')
@@ -248,38 +242,38 @@
                 $mobileFieldId = 'resp_mobile_' . $parentFieldName . '_' . $childField['name'];
             @endphp
 
-            <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
                 {{-- Desktop Image --}}
-                <div x-data="{
-                    fileUrl: items[index]['{{ $childField['name'] }}']['desktop'] || '',
-                    filePreview: items[index]['{{ $childField['name'] }}']['desktop'] || '',
-                    get callbackName() {
-                        return '{{ $desktopFieldId }}_' + index;
-                    },
-                    init() {
-                        this.$nextTick(() => {
-                            const handler = (e) => {
-                                this.fileUrl = e.detail.url;
-                                this.filePreview = e.detail.url;
-                                items[index]['{{ $childField['name'] }}']['desktop'] = e.detail.url;
-                            };
-                            window.addEventListener(this.callbackName, handler);
-                            this._cleanup = () => window.removeEventListener(this.callbackName, handler);
-                        });
-                    },
-                    destroy() {
-                        if (this._cleanup) this._cleanup();
-                    }
-                }">
-                    {{-- Hidden input --}}
-                    <input type="hidden"
-                           :name="'data[{{ $parentFieldName }}][' + index + '][{{ $childField['name'] }}][desktop]'"
-                           x-model="items[index]['{{ $childField['name'] }}']['desktop']"
-                           {{ $isRequired }}>
-
+                <div>
                     <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 block">Desktop Image</label>
+                    <div x-data="{
+                        fileUrl: items[index]['{{ $childField['name'] }}']['desktop'] || '',
+                        filePreview: items[index]['{{ $childField['name'] }}']['desktop'] || '',
+                        get callbackName() {
+                            return '{{ $desktopFieldId }}_' + index;
+                        },
+                        init() {
+                            this.$nextTick(() => {
+                                const handler = (e) => {
+                                    this.fileUrl = e.detail.url;
+                                    this.filePreview = e.detail.url;
+                                    items[index]['{{ $childField['name'] }}']['desktop'] = e.detail.url;
+                                };
+                                window.addEventListener(this.callbackName, handler);
+                                this._cleanup = () => window.removeEventListener(this.callbackName, handler);
+                            });
+                        },
+                        destroy() {
+                            if (this._cleanup) this._cleanup();
+                        }
+                    }">
+                        {{-- Hidden input --}}
+                        <input type="hidden"
+                               :name="'data[{{ $parentFieldName }}][' + index + '][{{ $childField['name'] }}][desktop]'"
+                               x-model="items[index]['{{ $childField['name'] }}']['desktop']"
+                               {{ $isRequired }}>
 
-                    <div class="file-upload-container">
+                    <div class="file-upload-container max-w-[200px]">
                         <div class="relative group file-upload-box"
                              @click="$dispatch('open-file-manager', { callback: callbackName })">
 
@@ -324,36 +318,36 @@
                 </div>
 
                 {{-- Mobile Image --}}
-                <div x-data="{
-                    fileUrl: items[index]['{{ $childField['name'] }}']['mobile'] || '',
-                    filePreview: items[index]['{{ $childField['name'] }}']['mobile'] || '',
-                    get callbackName() {
-                        return '{{ $mobileFieldId }}_' + index;
-                    },
-                    init() {
-                        this.$nextTick(() => {
-                            const handler = (e) => {
-                                this.fileUrl = e.detail.url;
-                                this.filePreview = e.detail.url;
-                                items[index]['{{ $childField['name'] }}']['mobile'] = e.detail.url;
-                            };
-                            window.addEventListener(this.callbackName, handler);
-                            this._cleanup = () => window.removeEventListener(this.callbackName, handler);
-                        });
-                    },
-                    destroy() {
-                        if (this._cleanup) this._cleanup();
-                    }
-                }">
-                    {{-- Hidden input --}}
-                    <input type="hidden"
-                           :name="'data[{{ $parentFieldName }}][' + index + '][{{ $childField['name'] }}][mobile]'"
-                           x-model="items[index]['{{ $childField['name'] }}']['mobile']"
-                           {{ $isRequired }}>
-
+                <div>
                     <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 block">Mobile Image</label>
+                    <div x-data="{
+                        fileUrl: items[index]['{{ $childField['name'] }}']['mobile'] || '',
+                        filePreview: items[index]['{{ $childField['name'] }}']['mobile'] || '',
+                        get callbackName() {
+                            return '{{ $mobileFieldId }}_' + index;
+                        },
+                        init() {
+                            this.$nextTick(() => {
+                                const handler = (e) => {
+                                    this.fileUrl = e.detail.url;
+                                    this.filePreview = e.detail.url;
+                                    items[index]['{{ $childField['name'] }}']['mobile'] = e.detail.url;
+                                };
+                                window.addEventListener(this.callbackName, handler);
+                                this._cleanup = () => window.removeEventListener(this.callbackName, handler);
+                            });
+                        },
+                        destroy() {
+                            if (this._cleanup) this._cleanup();
+                        }
+                    }">
+                        {{-- Hidden input --}}
+                        <input type="hidden"
+                               :name="'data[{{ $parentFieldName }}][' + index + '][{{ $childField['name'] }}][mobile]'"
+                               x-model="items[index]['{{ $childField['name'] }}']['mobile']"
+                               {{ $isRequired }}>
 
-                    <div class="file-upload-container">
+                    <div class="file-upload-container max-w-[200px]">
                         <div class="relative group file-upload-box"
                              @click="$dispatch('open-file-manager', { callback: callbackName })">
 
