@@ -32,6 +32,11 @@ class PageService extends BaseService implements PageServiceInterface
         $data = [
             'name' => $request->name,
             'slug' => Str::slug($request->slug ?? $request->name),
+            'heading' => $request->heading ?? null,
+            'sub_heading' => $request->sub_heading ?? null,
+            'short_description' => $request->short_description ?? null,
+            'full_description' => $request->full_description ?? null,
+            'banner' => $request->banner ?? null,
             'meta_title' => $request->meta_title ?? null,
             'meta_description' => $request->meta_description ?? null,
             'meta_image' => $request->meta_image ?? null,

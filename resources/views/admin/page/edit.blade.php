@@ -39,6 +39,91 @@
                     @enderror
                 </div>
 
+                <!-- Heading -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-2">{{ __('Heading') }}</label>
+                    <div class="flex">
+                        {!! defaultInputIcon() !!}
+                        <input type="text" name="heading" value="{{ old('heading', $page->heading) }}"
+                            class="form-input w-full" placeholder="{{ __('Enter heading') }}">
+                    </div>
+                    @error('heading')
+                        <div class="text-red-500 mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Sub Heading -->
+                <div class="mb-4 md:col-span-2">
+                    <label class="block text-gray-700 font-medium mb-2">{{ __('Sub Heading') }}</label>
+                    <div class="flex">
+                        {!! defaultInputIcon() !!}
+                        <textarea name="sub_heading" class="form-input w-full" rows="2"
+                            placeholder="{{ __('Enter sub heading') }}">{{ old('sub_heading', $page->sub_heading) }}</textarea>
+                    </div>
+                    @error('sub_heading')
+                        <div class="text-red-500 mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Short Description -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-2">{{ __('Short Description') }}</label>
+                    <div class="flex">
+                        {!! defaultInputIcon() !!}
+                        <textarea name="short_description" class="form-input w-full" rows="3"
+                            placeholder="{{ __('Enter short description') }}">{{ old('short_description', $page->short_description) }}</textarea>
+                    </div>
+                    @error('short_description')
+                        <div class="text-red-500 mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Full Description -->
+                <div class="mb-4 md:col-span-2">
+                    <label class="block text-gray-700 font-medium mb-2">{{ __('Full Description') }}</label>
+                    <x-tinymce-editor
+                        name="full_description"
+                        value="{{ old('full_description', $page->full_description) }}"
+                        height="500px"
+                    />
+                    @error('full_description')
+                        <div class="text-red-500 mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Banner Images (Desktop & Mobile) -->
+                <div class="mb-4 md:col-span-2">
+                    <label class="block text-gray-700 font-medium mb-2">{{ __('Banner Images') }}</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Desktop Banner -->
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">{{ __('Desktop Banner') }}</label>
+                            <x-common.file-manager-upload
+                                name="banner[desktop]"
+                                :value="old('banner.desktop', $page->banner['desktop'] ?? '')"
+                                label="Desktop Banner"
+                                width="200"
+                                height="120"
+                            />
+                        </div>
+
+                        <!-- Mobile Banner -->
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">{{ __('Mobile Banner') }}</label>
+                            <x-common.file-manager-upload
+                                name="banner[mobile]"
+                                :value="old('banner.mobile', $page->banner['mobile'] ?? '')"
+                                label="Mobile Banner"
+                                width="120"
+                                height="160"
+                            />
+                        </div>
+                    </div>
+                    @error('banner')
+                        <div class="text-red-500 mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <!-- Meta Title -->
                 <div class="mb-4">
                     <label class="block text-gray-700 font-medium mb-2">{{ __('Meta Title') }}</label>

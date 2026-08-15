@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\Subscriber\SubscriberController;
 use App\Http\Controllers\Api\Contact\ContactController;
 use App\Http\Controllers\Api\Slider\SliderController;
 use App\Http\Controllers\Api\DynamicPageController;
+use App\Http\Controllers\Api\TinyMCEController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,11 @@ Route::group(['middleware' => ['api.protection']], function () {
     Route::group(['prefix' => 'dynamic-page', 'as' => 'apiDynamicPage.'], function () {
         Route::get('/', [DynamicPageController::class, 'index'])->name('list');
         Route::get('{slug}', [DynamicPageController::class, 'show'])->name('show');
+    });
+
+    // TinyMCE Editor API
+    Route::group(['prefix' => 'tinymce', 'as' => 'apiTinyMCE.'], function () {
+        Route::post('upload', [TinyMCEController::class, 'upload'])->name('upload');
     });
 
     Route::group(['prefix' => 'blogs', 'as' => 'apiBlog.'], function () {

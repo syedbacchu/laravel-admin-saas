@@ -28,6 +28,7 @@ class Page extends Model
 
     protected $casts = [
         'status' => 'boolean',
+        'banner' => 'array',
     ];
 
     public function sections()
