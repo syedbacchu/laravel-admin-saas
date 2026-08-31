@@ -73,15 +73,4 @@
         </div>
     </div>
 
-    <style>
-        .form-input, .form-textarea, .form-checkbox {
-            border: 1px solid #e5e7eb;
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-            width: 100%;
-        }
-        .form-textarea {
-            resize: vertical;
-        }
-    </style>
 </x-layout.default>

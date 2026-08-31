@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\PageBuilder;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SectionTranslationUpdateRequest extends FormRequest
+class SectionTranslationStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
